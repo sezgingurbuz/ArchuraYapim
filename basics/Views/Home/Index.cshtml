@@ -2,7 +2,29 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<head>
+    <link rel="stylesheet" href="~/css/photo-style.css"/>
+</head>
+<div class="hero">
+    <div class="hero-content">
+        <h1>Hoşgeldiniz!</h1>
+        <p>Bu bir tam ekran hero alanıdır</p>
+        <button onclick="scrollToServices()">Başla</button>
+    </div>
 </div>
+ <!-- Alt İçerik-->
+  <div class="section">
+    <h2>Hakkımızda</h2>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aperiam quidem at quae molestiae impedit eaque. Harum, rem ut dolorem minus consequatur maiores nihil doloremque, odio fugiat provident veritatis eligendi sunt magnam, ab culpa praesentium ratione ducimus? Harum hic quae corporis dolorum, enim doloribus ipsa earum amet, maiores ut corrupti deserunt.</p>
+  </div>
+  <div class="section" id="services">
+    <h2>Hizmetlerimiz</h2>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae voluptatem facilis cumque neque ratione beatae!</p>
+  </div>
+
+<script>
+    function scrollToServices() {
+        document.getElementById('services').scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+
