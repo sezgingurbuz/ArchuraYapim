@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using basics.Models;
+using basics.Areas.Admin.Models;
 
 namespace basics.Data;
 
@@ -10,6 +11,7 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<SeatingPlan> SeatingPlans { get; set; }
+    public DbSet<Salon> Salonlar { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

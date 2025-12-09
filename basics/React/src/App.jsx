@@ -467,7 +467,7 @@ const App = () => {
       showNotification("Lütfen bir Salon Adı girin.");
       return;
     }
-
+    const kapasiteSayisi = planData.koltuklar.length;
     const cleanPlanData = {
       ...planData,
       koltuklar: planData.koltuklar.map(({ isSelected, ...rest }) => rest)
@@ -482,6 +482,7 @@ const App = () => {
         body: JSON.stringify({
           salonAdi: planData.salonAdi,
           planAdi: planData.salonAdi,
+          kapasite: kapasiteSayisi,
           planData: cleanPlanData
         })
       });
@@ -819,7 +820,7 @@ const App = () => {
         {planData.koltuklar.length > 0 && (
           <div className="bg-gray-700 p-3 rounded-lg mb-4 border border-gray-600">
             <p className="text-sm font-bold text-yellow-400 mb-2">Salon Bilgisi</p>
-            <p className="text-xs text-gray-300">Toplam Koltuk: <span className="font-semibold text-yellow-300">{planData.koltuklar.length}</span></p>
+            <p className="text-xs text-gray-300">Kapasite: <span className="font-semibold text-yellow-300">{planData.koltuklar.length}</span></p>
             <p className="text-xs text-gray-300">Blok Sayısı: <span className="font-semibold text-yellow-300">{planData.bloklar.length}</span></p>
             <p className="text-xs text-gray-400 mt-2">Satır Sayısı: <span className="font-semibold text-yellow-300">{Math.max(...planData.bloklar.map(b => b.rows), 0)}</span></p>
           </div>

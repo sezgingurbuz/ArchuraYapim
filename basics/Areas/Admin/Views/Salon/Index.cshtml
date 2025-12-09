@@ -1,0 +1,204 @@
+@model basics.Areas.Admin.Models.SalonListViewModel
+
+@{
+    ViewData["Title"] = "Salon Yönetimi";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<head>
+    <link rel="stylesheet" href="~/css/salonlar-style.css"/>
+</head>
+
+<div class="main-content">
+    <div class="header">
+        <div>
+            <h1>Tiyatro Salonları Yönetimi</h1>
+            <p style="color: #7f8c8d; margin-top: 5px;">Salonları görüntüleyin, düzenleyin veya yeni salon ekleyin.</p>
+        </div>
+        
+        <div class="stats-section">
+            <div class="stat-card">
+                <span class="stat-icon">🎭</span>
+                <h4>Toplam Salon</h4>
+                <div class="stat-value">@Model.Salonlar.Count</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">✅</span>
+                <h4>Aktif Salon Sayısı</h4>
+                <div   div class="stat-value">@Model.Salonlar.Count(x => x.Durum == "Aktif")</div>
+</div>
+        </div>
+
+        <button class="btn-add" onclick="toggleNewSalonPanel()">
+            + Yeni Salon Ekle
+        </button>
+         <a asp-area="Admin" asp-controller="Salon" asp-action="SalonDuzenOlustur" class="btn btn-primary ms-2">
+            Yeni koltuk düzeni oluştur
+        </a>
+    </div>
+
+    <div id="newSalonPanel" class="collapsible-panel" style="@(ViewData.ModelState.IsValid ? "" : "max-height: 500px;")">
+        
+        <form asp-action="Ekle" method="post" class="panel-content">
+            
+            <div class="filter-group">
+                <label>Salon Adı</label>
+                <input asp-for="YeniSalon.SalonAdi" type="text" placeholder="Örn: Büyük Tiyatro Salonu" required>
+            </div>
+
+            <div class="filter-group">
+                <label>Şehir</label>
+                <input asp-for="YeniSalon.Sehir" list="cityOptions" placeholder="Şehir seçiniz..." required>
+                <datalist id="cityOptions">
+                    <option value="İstanbul" />
+                    <option value="Ankara" />
+                    <option value="İzmir" />
+                    <option value="Bursa" />
+                    <option value="Antalya" />
+                </datalist>
+            </div>
+
+            <div class="filter-group">
+                <label>Koltuk Düzeni</label>
+                <select asp-for="YeniSalon.KoltukDuzeni" id="layoutSelect" onchange="updateCapacityFromLayout()" required>
+                    <option value="" disabled selected>Bir düzen seçiniz...</option>
+                    @foreach (var plan in Model.Planlar)
+                    {
+                        <option value="@plan.PlanAdi" data-capacity="@plan.Kapasite">
+                            @plan.PlanAdi (Kapasite: @plan.Kapasite)
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Salon Kapasitesi</label>
+                <input type="text" id="salonCapacity" placeholder="Otomatik" readonly>
+            </div>
+
+            <div class="panel-actions">
+                <button type="submit" class="btn-save">Kaydet ve Ekle</button>
+            </div>
+        </form>
+    </div>
+    <div class="filters-section">
+        <div class="filters-header">
+            <h3>🔍 Filtrele ve Ara</h3>
+            <button class="btn-action btn-view" onclick="resetFilters()">Filtreleri Temizle</button>
+        </div>
+        <div class="filter-controls">
+            <div class="filter-group">
+                <label>Arama</label>
+                <input type="text" id="searchInput" placeholder="Salon adı ara..." onkeyup="applyFilters()">
+            </div>
+             <div class="filter-group">
+                <label>Şehir</label>
+                <select id="cityFilter" onchange="applyFilters()">
+                <option value="">Tümü</option>
+                @foreach (var sehir in Model.MevcutSehirler)
+                {
+                    <option value="@sehir">@sehir</option>
+             }
+    </select>
+</div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Salon Adı</th>
+                    <th>Şehir</th>
+                    <th>Koltuk Düzeni</th>
+                    <th>Kapasite</th>
+                    <th>Durum</th> <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody id="theaterTableBody">
+                @if (Model.Salonlar.Count > 0)
+                {
+                    @foreach (var salon in Model.Salonlar)
+                    {
+                        <tr>
+                            <td><strong>@salon.SalonAdi</strong></td>
+                            <td>@salon.Sehir</td>
+                            <td>@salon.KoltukDuzeni</td>
+                            <td><span class="badge bg-primary">@salon.SalonKapasitesi</span></td>
+                            <td>
+                                @if (salon.Durum == "Aktif")
+                                {
+                                    <span class="badge bg-success">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Pasif</span>
+                                }
+                            </td>
+                            <td>
+                                <a href="/Admin/Salon/Sil/@salon.Id" class="text-danger" style="font-size: 1.2rem;" onclick="return confirm('Silmek istediğinize emin misiniz?');" title="Sil">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center" style="padding: 20px;">Henüz kayıtlı salon bulunmamaktadır.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function toggleNewSalonPanel() {
+        var panel = document.getElementById("newSalonPanel");
+        if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+        } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+        }
+    }
+
+    function updateCapacityFromLayout() {
+        var selectBox = document.getElementById("layoutSelect");
+        var capacityInput = document.getElementById("salonCapacity");
+        var selectedOption = selectBox.options[selectBox.selectedIndex];
+        var capacity = selectedOption.getAttribute("data-capacity");
+        
+        if(capacity) {
+            capacityInput.value = capacity;
+        } else {
+            capacityInput.value = "";
+        }
+    }
+
+    function applyFilters() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("searchInput");
+        filter = input.value.toUpperCase();
+        table = document.querySelector("table");
+        tr = table.getElementsByTagName("tr");
+
+        for (i = 1; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[0];
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+
+    function resetFilters() {
+        document.getElementById("searchInput").value = "";
+        applyFilters();
+    }
+</script>

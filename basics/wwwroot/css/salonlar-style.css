@@ -1,0 +1,340 @@
+/* Genel Düzenlemeler */
+.main-content {
+    padding: 30px;
+    background: #f8f9fa;
+    min-height: 100vh;
+}
+
+.header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    padding: 35px;
+    border-radius: 15px;
+    color: white;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.header p {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #ecf0f1;
+    opacity: 1;
+}
+
+/* İstatistik Kartları */
+.stats-section {
+    display: flex;
+    gap: 20px;
+    margin: 25px 0;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 20px 30px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+}
+
+.stat-card h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: 5px;
+}
+
+/* Butonlar */
+.btn-add {
+    background: white;
+    color: #2c3e50;
+    border: none;
+    padding: 14px 30px;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-add:hover {
+    background: #ecf0f1;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary {
+    background: white;
+    color: #2c3e50;
+    border: 2px solid white;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    margin-left: 10px;
+}
+
+.btn-primary:hover {
+    background: #ecf0f1;
+    transform: translateY(-2px);
+}
+
+/* Panel */
+.collapsible-panel {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.4s ease;
+    margin-bottom: 25px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.panel-content {
+    padding: 30px;
+}
+
+.filter-group {
+    margin-bottom: 20px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.filter-group input,
+.filter-group select {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    outline: none;
+    border-color: #2c3e50;
+    box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+}
+
+.panel-actions {
+    margin-top: 25px;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    border: none;
+    padding: 14px 35px;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-save:hover {
+    background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Filtreler Bölümü */
+.filters-section {
+    background: white;
+    padding: 25px 30px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.filters-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.filter-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.btn-action {
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-view {
+    background: #e8f0fe;
+    color: #1967d2;
+}
+
+.btn-view:hover {
+    background: #d2e3fc;
+}
+
+/* Tablo Stili */
+.table-container {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+}
+
+thead th {
+    padding: 20px 25px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 1.1rem;
+    letter-spacing: 0.3px;
+}
+
+tbody tr {
+    border-bottom: 1px solid #e8ecef;
+    transition: all 0.3s ease;
+}
+
+tbody tr:hover {
+    background: #f8f9ff;
+    transform: scale(1.01);
+}
+
+tbody tr:last-child {
+    border-bottom: none;
+}
+
+tbody td {
+    padding: 22px 25px;
+    color: #2c3e50;
+    font-size: 1.05rem;
+}
+
+tbody td strong {
+    font-weight: 700;
+    color: #1a1a1a;
+    font-size: 1.1rem;
+}
+
+/* Badge Stilleri */
+.badge {
+    display: inline-block;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.3px;
+}
+
+.bg-primary {
+    background: #2c3e50;
+    color: #ffffff;
+    border: 2px solid #34495e;
+}
+
+.bg-success {
+    background: #27ae60;
+    color: #ffffff;
+    border: 2px solid #229954;
+}
+
+.bg-danger {
+    background: #e74c3c;
+    color: #ffffff;
+    border: 2px solid #c0392b;
+}
+
+/* İşlem İkonları */
+.text-danger {
+    color: #e74c3c;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.text-danger:hover {
+    color: #c0392b;
+    transform: scale(1.2);
+}
+
+/* Boş Durum */
+.text-center {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 1.1rem;
+    font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stats-section {
+        flex-direction: column;
+    }
+
+    .header h1 {
+        font-size: 1.8rem;
+    }
+
+    .filter-controls {
+        grid-template-columns: 1fr;
+    }
+
+    thead th,
+    tbody td {
+        padding: 15px;
+        font-size: 0.95rem;
+    }
+}

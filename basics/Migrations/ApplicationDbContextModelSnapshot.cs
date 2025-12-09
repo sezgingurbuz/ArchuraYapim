@@ -19,7 +19,37 @@ namespace basics.Migrations
                 .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("basics.Models.SeatingPlan", b =>
+            modelBuilder.Entity("basics.Areas.Admin.Models.Salon", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Durum")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("KoltukDuzeni")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SalonAdi")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("SalonKapasitesi")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Sehir")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Salonlar");
+                });
+
+            modelBuilder.Entity("basics.Areas.Admin.Models.SeatingPlan", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -28,7 +58,10 @@ namespace basics.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2025, 12, 8, 13, 50, 7, 996, DateTimeKind.Utc).AddTicks(613));
+                        .HasDefaultValue(new DateTime(2025, 12, 9, 14, 27, 17, 284, DateTimeKind.Utc).AddTicks(8591));
+
+                    b.Property<int>("Kapasite")
+                        .HasColumnType("int");
 
                     b.Property<string>("PlanAdi")
                         .HasMaxLength(255)
@@ -46,7 +79,7 @@ namespace basics.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2025, 12, 8, 13, 50, 7, 996, DateTimeKind.Utc).AddTicks(1212));
+                        .HasDefaultValue(new DateTime(2025, 12, 9, 14, 27, 17, 284, DateTimeKind.Utc).AddTicks(9174));
 
                     b.HasKey("Id");
 
