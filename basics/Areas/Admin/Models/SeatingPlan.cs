@@ -7,6 +7,7 @@ public class SeatingPlan
     public int Kapasite { get; set; }
     public string? PlanAdi { get; set; }
     public required string PlanJson { get; set; }
+    public string Durum { get; set; } = "Pasif";
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

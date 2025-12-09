@@ -58,7 +58,11 @@ namespace basics.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2025, 12, 9, 14, 27, 17, 284, DateTimeKind.Utc).AddTicks(8591));
+                        .HasDefaultValue(new DateTime(2025, 12, 9, 19, 20, 11, 668, DateTimeKind.Utc).AddTicks(5309));
+
+                    b.Property<string>("Durum")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<int>("Kapasite")
                         .HasColumnType("int");
@@ -79,7 +83,7 @@ namespace basics.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2025, 12, 9, 14, 27, 17, 284, DateTimeKind.Utc).AddTicks(9174));
+                        .HasDefaultValue(new DateTime(2025, 12, 9, 19, 20, 11, 668, DateTimeKind.Utc).AddTicks(5813));
 
                     b.HasKey("Id");
 

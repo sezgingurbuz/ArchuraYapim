@@ -28,6 +28,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQWRtaW5cSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Areas/Admin/Views/Oyunlar/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcT3l1bmxhclxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Areas/Admin/Views/Salon/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcU2Fsb25cSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 

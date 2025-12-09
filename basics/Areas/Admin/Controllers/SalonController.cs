@@ -36,7 +36,7 @@ namespace basics.Areas.Admin.Controllers
                 Salonlar = _dbContext.Salonlar.OrderByDescending(x => x.Id).ToList(),
 
                 // Dropdown için planları getir
-                Planlar = _dbContext.SeatingPlans.ToList(),
+                Planlar = _dbContext.SeatingPlans.Where(p=>p.Durum == "Pasif").ToList(),
                 MevcutSehirler = _dbContext.Salonlar
                     .Select(s => s.Sehir)
                     .Distinct()
@@ -50,33 +50,67 @@ namespace basics.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Ekle(SalonListViewModel model)
         {
-                // Salon adı ve Şehir doluysa işleme başla
-                if (!string.IsNullOrEmpty(model.YeniSalon.SalonAdi) && !string.IsNullOrEmpty(model.YeniSalon.Sehir))
+            if (!string.IsNullOrEmpty(model.YeniSalon.SalonAdi) && !string.IsNullOrEmpty(model.YeniSalon.Sehir))
+            {
+                // 1. Seçilen planı veritabanından bul
+                var secilenPlan = await _dbContext.SeatingPlans
+                    .FirstOrDefaultAsync(p => p.PlanAdi == model.YeniSalon.KoltukDuzeni);
+
+                if (secilenPlan != null)
                 {
-                    // 1. Kapasiteyi Plan'dan bul ve ata
-                    var secilenPlan = await _dbContext.SeatingPlans
-                        .FirstOrDefaultAsync(p => p.PlanAdi == model.YeniSalon.KoltukDuzeni);
+                    // Kapasiteyi al
+                    model.YeniSalon.SalonKapasitesi = secilenPlan.Kapasite;
 
-                    model.YeniSalon.SalonKapasitesi = secilenPlan != null ? secilenPlan.Kapasite : 0;
-
-                    // 2. YENİ: Durumu açıkça "Pasif" olarak ayarla
-                    model.YeniSalon.Durum = "Pasif";
-
-                    // 3. Kaydet
-                    _dbContext.Salonlar.Add(model.YeniSalon);
-                    await _dbContext.SaveChangesAsync();
-
-                    return RedirectToAction("Index");
+                    // Planın durumunu 'Aktif' yap (Artık zimmetlendi)
+                    secilenPlan.Durum = "Aktif";
+                    _dbContext.SeatingPlans.Update(secilenPlan);
+                }
+                else
+                {
+                    model.YeniSalon.SalonKapasitesi = 0;
                 }
 
-                // Hata varsa sayfayı tekrar doldur
-                model.Salonlar = _dbContext.Salonlar.ToList();
-                model.Planlar = _dbContext.SeatingPlans.ToList();
-                return View("Index", model);
-            
-        
+                // Salon varsayılan olarak Pasif başlar (Oyun eklenene kadar)
+                model.YeniSalon.Durum = "Pasif";
+
+                _dbContext.Salonlar.Add(model.YeniSalon);
+
+                // Hem Salonu ekle hem Planı güncelle (Transaction gibi çalışır)
+                await _dbContext.SaveChangesAsync();
+
+                return RedirectToAction("Index");
+            }
+
+            // Hata durumunda listeleri tekrar doldururken de sadece Pasifleri getir
+            model.Salonlar = _dbContext.Salonlar.ToList();
+            model.Planlar = _dbContext.SeatingPlans.Where(p => p.Durum == "Pasif").ToList();
+            model.MevcutSehirler = _dbContext.Salonlar.Select(x => x.Sehir).Distinct().ToList();
+
+            return View("Index", model);
         }
 
+        public async Task<IActionResult> Sil(int id)
+        {
+            var salon = await _dbContext.Salonlar.FindAsync(id);
+            if (salon != null)
+            {
+                // 1. Bu salona bağlı olan planı bul (İsme göre)
+                var bagliPlan = await _dbContext.SeatingPlans
+                    .FirstOrDefaultAsync(p => p.PlanAdi == salon.KoltukDuzeni);
+
+                // 2. Eğer plan veritabanında hala duruyorsa, durumunu tekrar 'Pasif' yap
+                if (bagliPlan != null)
+                {
+                    bagliPlan.Durum = "Pasif";
+                    _dbContext.SeatingPlans.Update(bagliPlan);
+                }
+
+                // 3. Salonu sil
+                _dbContext.Salonlar.Remove(salon);
+                await _dbContext.SaveChangesAsync();
+            }
+            return RedirectToAction("Index");
+        }
 
 
         // Senin özel olarak istediğin sayfa
