@@ -122,16 +122,20 @@
             <i class="fa-solid fa-couch"></i> Salon Yönetimi
         </a>
         
-        <a asp-area="Admin" asp-controller="Admin" asp-action="Oyunlar">
-            <i class="fa-solid fa-masks-theater"></i> Oyunlar
+        <a asp-area="Admin" asp-controller="Etkinlikler" asp-action="Index">
+            <i class="fa-solid fa-masks-theater"></i> Etkinlikler
         </a>
         
-        <a asp-area="Admin" asp-controller="Admin" asp-action="Satislar">
+        <a asp-area="Admin" asp-controller="Satislar" asp-action="Index">
             <i class="fa-solid fa-money-bill-trend-up"></i> Satışlar
         </a>
         
         <a asp-area="Admin" asp-controller="Admin" asp-action="Users">
             <i class="fa-solid fa-users"></i> Kullanıcılar
+        </a>
+        
+        <a asp-area="Admin" asp-controller="Rapor" asp-action="Index">
+            <i class="fa-solid fa-chart-line"></i> Raporlar
         </a>
         
         <hr style="border-color: #555;">
@@ -152,14 +156,17 @@
 
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="" width="32" height="32" class="rounded-circle me-2">
-                    <strong>Admin</strong>
+                    @{
+                        var userName = User.Identity?.Name ?? "Admin";
+                    }
+                    <img src="https://ui-avatars.com/api/?name=@userName&background=0D8ABC&color=fff" alt="" width="32" height="32" class="rounded-circle me-2">
+                    <strong>@userName</strong>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end text-small shadow" aria-labelledby="dropdownUser1">
                     <li><a class="dropdown-item" href="#">Ayarlar</a></li>
                     <li><a class="dropdown-item" href="#">Profil</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#">Çıkış Yap</a></li>
+                    <li><a class="dropdown-item" asp-area="Admin" asp-controller="Login" asp-action="CikisYap">Çıkış Yap</a></li>
                 </ul>
             </div>
         </div>

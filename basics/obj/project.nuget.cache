@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "UZ30QXIn330=",
+  "dgSpecHash": "H5G7hJZ1vc4=",
   "success": true,
-  "projectFilePath": "D:\\Yazilim\\ASP NET-CORE\\Proje\\ArchuraYapim\\basics\\basics.csproj",
+  "projectFilePath": "E:\\Yazilim\\ASP NET-CORE\\Proje\\ArchuraYapim\\basics\\basics.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Sezgin\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\Sezgin\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\Sezgin\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\6.0.0\\microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",
     "C:\\Users\\Sezgin\\.nuget\\packages\\microsoft.codeanalysis.analyzers\\3.3.3\\microsoft.codeanalysis.analyzers.3.3.3.nupkg.sha512",

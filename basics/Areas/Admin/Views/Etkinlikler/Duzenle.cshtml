@@ -1,0 +1,57 @@
+@model basics.Areas.Admin.Models.EtkinlikEkleViewModel
+@{
+    ViewData["Title"] = "Etkinlik Düzenle";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    int etkinlikId = ViewBag.EtkinlikId != null ? (int)ViewBag.EtkinlikId : 0;
+}
+
+<div class="container py-5">
+    <div class="card shadow-sm border-0" style="max-width: 800px; margin: 0 auto;">
+        <div class="card-header bg-warning text-dark p-4">
+            <h4 class="m-0"><i class="fa-solid fa-pen-to-square me-2"></i>Etkinlik Düzenle</h4>
+        </div>
+
+        <div class="card-body p-4">
+            <form asp-action="Duzenle" asp-route-id="@etkinlikId" method="post">
+                
+                <div class="row g-4 mb-4">
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold text-muted small">Etkinlik İsmi</label>
+                        <input asp-for="EtkinlikAdi" type="text" class="form-control form-control-lg" required />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-muted small">Türü</label>
+                         <select asp-for="Tur" class="form-select form-select-lg">
+                            <option>Tiyatro</option>
+                            <option>Müzikal</option>
+                            <option>Stand-up</option>
+                            <option>Konser</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Salon ve Şehir Değişimi Engellendi (Bilgi Amaçlı Gösterilebilir veya Gizlenebilir) -->
+                <!-- Eğer göstermek isterseniz controller'dan Salon adını ViewBag ile göndermeniz gerekir. -->
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-muted small">Gün</label>
+                        <input asp-for="Tarih" type="date" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-muted small">Saat</label>
+                        <input asp-for="Saat" type="time" class="form-control" required>
+                    </div>
+
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 mt-4">
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">İptal</a>
+                    <button type="submit" class="btn btn-warning px-5 fw-bold">
+                        <i class="fa-solid fa-save me-2"></i>Değişiklikleri Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

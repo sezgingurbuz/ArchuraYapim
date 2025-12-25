@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 using System.Linq;
 using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace basics.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize]
     public class SalonController : Controller
     {
         private readonly ILogger<SalonController> _logger;
@@ -33,10 +35,13 @@ namespace basics.Areas.Admin.Controllers
             var model = new SalonListViewModel
             {
                 // Mevcut salonları getir
-                Salonlar = _dbContext.Salonlar.OrderByDescending(x => x.Id).ToList(),
+                Salonlar = _dbContext.Salonlar
+            .Include(x => x.SeatingPlan) 
+            .OrderByDescending(x => x.Id)
+            .ToList(),
 
                 // Dropdown için planları getir
-                Planlar = _dbContext.SeatingPlans.Where(p=>p.Durum == "Pasif").ToList(),
+                Planlar = _dbContext.SeatingPlans.ToList(),
                 MevcutSehirler = _dbContext.Salonlar
                     .Select(s => s.Sehir)
                     .Distinct()
@@ -50,11 +55,10 @@ namespace basics.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Ekle(SalonListViewModel model)
         {
-            if (!string.IsNullOrEmpty(model.YeniSalon.SalonAdi) && !string.IsNullOrEmpty(model.YeniSalon.Sehir))
+            if (model.YeniSalon.SeatingPlanId > 0 && !string.IsNullOrEmpty(model.YeniSalon.Sehir))
             {
                 // 1. Seçilen planı veritabanından bul
-                var secilenPlan = await _dbContext.SeatingPlans
-                    .FirstOrDefaultAsync(p => p.PlanAdi == model.YeniSalon.KoltukDuzeni);
+                var secilenPlan = await _dbContext.SeatingPlans.FindAsync(model.YeniSalon.SeatingPlanId);
 
                 if (secilenPlan != null)
                 {
@@ -82,36 +86,34 @@ namespace basics.Areas.Admin.Controllers
             }
 
             // Hata durumunda listeleri tekrar doldururken de sadece Pasifleri getir
-            model.Salonlar = _dbContext.Salonlar.ToList();
-            model.Planlar = _dbContext.SeatingPlans.Where(p => p.Durum == "Pasif").ToList();
-            model.MevcutSehirler = _dbContext.Salonlar.Select(x => x.Sehir).Distinct().ToList();
-
-            return View("Index", model);
+            model.Salonlar = _dbContext.Salonlar.Include(x => x.SeatingPlan).ToList();
+            model.Planlar = _dbContext.SeatingPlans.ToList();
+    
+    return View("Index", model);
         }
 
         public async Task<IActionResult> Sil(int id)
+{
+    // İlişkili planı da çekiyoruz (.Include)
+    var salon = await _dbContext.Salonlar
+        .Include(s => s.SeatingPlan)
+        .FirstOrDefaultAsync(s => s.Id == id);
+
+    if (salon != null)
+    {
+        // İlişkili plan varsa durumunu Pasif yap
+        if (salon.SeatingPlan != null)
         {
-            var salon = await _dbContext.Salonlar.FindAsync(id);
-            if (salon != null)
-            {
-                // 1. Bu salona bağlı olan planı bul (İsme göre)
-                var bagliPlan = await _dbContext.SeatingPlans
-                    .FirstOrDefaultAsync(p => p.PlanAdi == salon.KoltukDuzeni);
-
-                // 2. Eğer plan veritabanında hala duruyorsa, durumunu tekrar 'Pasif' yap
-                if (bagliPlan != null)
-                {
-                    bagliPlan.Durum = "Pasif";
-                    _dbContext.SeatingPlans.Update(bagliPlan);
-                }
-
-                // 3. Salonu sil
-                _dbContext.Salonlar.Remove(salon);
-                await _dbContext.SaveChangesAsync();
-            }
-            return RedirectToAction("Index");
+            salon.SeatingPlan.Durum = "Pasif";
+            // SeatingPlan tablosunu güncelle
+            _dbContext.SeatingPlans.Update(salon.SeatingPlan);
         }
 
+        _dbContext.Salonlar.Remove(salon);
+        await _dbContext.SaveChangesAsync();
+    }
+    return RedirectToAction("Index");
+}
 
         // Senin özel olarak istediğin sayfa
         // URL: /Admin/Salon/SalonDuzenOlustur

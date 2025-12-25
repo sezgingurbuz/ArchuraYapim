@@ -19,6 +19,192 @@ namespace basics.Migrations
                 .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("basics.Areas.Admin.Models.AdminUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("passwordHash")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("userName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AdminUsers");
+                });
+
+            modelBuilder.Entity("basics.Areas.Admin.Models.Etkinlik", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("EtkinlikAdi")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("SalonId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("SatisAktifMi")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("TarihSaat")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Tur")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SalonId");
+
+                    b.ToTable("Etkinlikler");
+                });
+
+            modelBuilder.Entity("basics.Areas.Admin.Models.EtkinlikKoltuk", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Blok")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("DoluMu")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("EtkinlikId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Fiyat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("KoltukNo")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("MusteriAdi")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("MusteriEmail")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("MusteriSoyadi")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("MusteriTelefon")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Numara")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OdemeYontemi")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SatisPlatformu")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("SatisTarihi")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("SatisYapanKullanici")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Sira")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EtkinlikId");
+
+                    b.ToTable("EtkinlikKoltuklari");
+                });
+
+            modelBuilder.Entity("basics.Areas.Admin.Models.EtkinlikRapor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("BiletinialSatisAdedi")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BosKoltuk")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BubiletSatisAdedi")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("EFTHasilat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("EFTSatisAdedi")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EtkinlikAdi")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<decimal>("KartHasilat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("KartSatisAdedi")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("NakitHasilat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("NakitSatisAdedi")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("RaporTarihi")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("RaporlayanKullanici")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SalonAdi")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("SatilanBilet")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Sehir")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("TarihSaat")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<decimal>("ToplamHasilat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ToplamKapasite")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Tur")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EtkinlikRaporlari");
+                });
+
             modelBuilder.Entity("basics.Areas.Admin.Models.Salon", b =>
                 {
                     b.Property<int>("Id")
@@ -29,10 +215,6 @@ namespace basics.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("KoltukDuzeni")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.Property<string>("SalonAdi")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -40,11 +222,16 @@ namespace basics.Migrations
                     b.Property<int>("SalonKapasitesi")
                         .HasColumnType("int");
 
+                    b.Property<int?>("SeatingPlanId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Sehir")
                         .IsRequired()
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SeatingPlanId");
 
                     b.ToTable("Salonlar");
                 });
@@ -58,7 +245,7 @@ namespace basics.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2025, 12, 9, 19, 20, 11, 668, DateTimeKind.Utc).AddTicks(5309));
+                        .HasDefaultValue(new DateTime(2025, 12, 25, 11, 56, 34, 562, DateTimeKind.Utc).AddTicks(4218));
 
                     b.Property<string>("Durum")
                         .IsRequired()
@@ -83,11 +270,42 @@ namespace basics.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2025, 12, 9, 19, 20, 11, 668, DateTimeKind.Utc).AddTicks(5813));
+                        .HasDefaultValue(new DateTime(2025, 12, 25, 11, 56, 34, 562, DateTimeKind.Utc).AddTicks(4720));
 
                     b.HasKey("Id");
 
                     b.ToTable("SeatingPlans");
+                });
+
+            modelBuilder.Entity("basics.Areas.Admin.Models.Etkinlik", b =>
+                {
+                    b.HasOne("basics.Areas.Admin.Models.Salon", "Salon")
+                        .WithMany()
+                        .HasForeignKey("SalonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Salon");
+                });
+
+            modelBuilder.Entity("basics.Areas.Admin.Models.EtkinlikKoltuk", b =>
+                {
+                    b.HasOne("basics.Areas.Admin.Models.Etkinlik", "Etkinlik")
+                        .WithMany()
+                        .HasForeignKey("EtkinlikId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Etkinlik");
+                });
+
+            modelBuilder.Entity("basics.Areas.Admin.Models.Salon", b =>
+                {
+                    b.HasOne("basics.Areas.Admin.Models.SeatingPlan", "SeatingPlan")
+                        .WithMany()
+                        .HasForeignKey("SeatingPlanId");
+
+                    b.Navigation("SeatingPlan");
                 });
 #pragma warning restore 612, 618
         }

@@ -59,17 +59,17 @@
             </div>
 
             <div class="filter-group">
-                <label>Koltuk Düzeni</label>
-                <select asp-for="YeniSalon.KoltukDuzeni" id="layoutSelect" onchange="updateCapacityFromLayout()" required>
-                    <option value="" disabled selected>Bir düzen seçiniz...</option>
-                    @foreach (var plan in Model.Planlar)
-                    {
-                        <option value="@plan.PlanAdi" data-capacity="@plan.Kapasite">
-                            @plan.PlanAdi (Kapasite: @plan.Kapasite)
-                        </option>
-                    }
-                </select>
-            </div>
+    <label>Koltuk Düzeni</label>
+    <select asp-for="YeniSalon.SeatingPlanId" id="layoutSelect" onchange="updateCapacityFromLayout()" required>
+        <option value="" disabled selected>Bir düzen seçiniz...</option>
+        @foreach (var plan in Model.Planlar)
+        {
+            <option value="@plan.Id" data-capacity="@plan.Kapasite">
+                @plan.PlanAdi (Kapasite: @plan.Kapasite)
+            </option>
+        }
+    </select>
+</div>
 
             <div class="filter-group">
                 <label>Salon Kapasitesi</label>
@@ -123,7 +123,9 @@
                         <tr>
                             <td><strong>@salon.SalonAdi</strong></td>
                             <td>@salon.Sehir</td>
-                            <td>@salon.KoltukDuzeni</td>
+                            <td>
+        @(salon.SeatingPlan != null ? salon.SeatingPlan.PlanAdi : "Plan Bulunamadı")
+    </td>
                             <td><span class="badge bg-primary">@salon.SalonKapasitesi</span></td>
                             <td>
                                 @if (salon.Durum == "Aktif")

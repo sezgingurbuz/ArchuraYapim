@@ -1,10 +1,21 @@
 using basics.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Admin/Login/Index";
+        options.ExpireTimeSpan = TimeSpan.FromDays(1);
+        options.SlidingExpiration = true;
+        options.AccessDeniedPath = "/Admin/Login/AccessDenied";
+    });
+
 
 // Add DbContext with MySQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -28,7 +39,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthorization();
+app.UseAuthentication(); //Önce Kimlik Kontrolü
+app.UseAuthorization(); //Sonra Yetkilendirme
 
 
 app.MapControllerRoute(

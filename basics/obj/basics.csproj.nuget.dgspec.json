@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Yazilim\\ASP NET-CORE\\Proje\\ArchuraYapim\\basics\\basics.csproj": {}
+    "E:\\Yazilim\\ASP NET-CORE\\Proje\\ArchuraYapim\\basics\\basics.csproj": {}
   },
   "projects": {
-    "D:\\Yazilim\\ASP NET-CORE\\Proje\\ArchuraYapim\\basics\\basics.csproj": {
+    "E:\\Yazilim\\ASP NET-CORE\\Proje\\ArchuraYapim\\basics\\basics.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Yazilim\\ASP NET-CORE\\Proje\\ArchuraYapim\\basics\\basics.csproj",
+        "projectUniqueName": "E:\\Yazilim\\ASP NET-CORE\\Proje\\ArchuraYapim\\basics\\basics.csproj",
         "projectName": "basics",
-        "projectPath": "D:\\Yazilim\\ASP NET-CORE\\Proje\\ArchuraYapim\\basics\\basics.csproj",
+        "projectPath": "E:\\Yazilim\\ASP NET-CORE\\Proje\\ArchuraYapim\\basics\\basics.csproj",
         "packagesPath": "C:\\Users\\Sezgin\\.nuget\\packages\\",
-        "outputPath": "D:\\Yazilim\\ASP NET-CORE\\Proje\\ArchuraYapim\\basics\\obj\\",
+        "outputPath": "E:\\Yazilim\\ASP NET-CORE\\Proje\\ArchuraYapim\\basics\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -44,12 +44,16 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "BCrypt.Net-Next": {
+              "target": "Package",
+              "version": "[4.0.3, )"
+            },
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
@@ -80,7 +84,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

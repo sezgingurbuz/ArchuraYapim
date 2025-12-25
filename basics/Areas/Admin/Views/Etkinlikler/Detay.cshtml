@@ -1,0 +1,262 @@
+@model basics.Areas.Admin.Models.Etkinlik
+@{
+    ViewData["Title"] = "Etkinlik Detayı - " + Model.EtkinlikAdi;
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var biletler = ViewBag.Biletler as List<basics.Areas.Admin.Models.EtkinlikKoltuk>;
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="fa-solid fa-calendar-day me-2"></i>@Model.EtkinlikAdi</h2>
+            <p class="text-muted mb-0">
+                <i class="fa-solid fa-location-dot me-2"></i>@Model.Salon?.SalonAdi (@Model.Salon?.Sehir)
+                <span class="mx-2">|</span>
+                <i class="fa-regular fa-clock me-2"></i>@Model.TarihSaat.ToString("dd MMMM yyyy HH:mm")
+            </p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left me-2"></i>Listeye Dön
+            </a>
+        </div>
+    </div>
+
+    <!-- ÖZET KARTLARI -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="card-body">
+                    <h5 class="text-muted small text-uppercase">Toplam Kapasite</h5>
+                    <div class="display-6 fw-bold text-primary">@Model.Salon?.SalonKapasitesi</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="card-body">
+                    <h5 class="text-muted small text-uppercase">Satılan Bilet</h5>
+                    <div class="display-6 fw-bold text-success">
+                        @(biletler?.Count(x => x.DoluMu) ?? 0)
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="card-body">
+                    <h5 class="text-muted small text-uppercase">Boş Koltuk</h5>
+                    <div class="display-6 fw-bold text-secondary">
+                        @(biletler?.Count(x => !x.DoluMu) ?? 0)
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="card-body">
+                    <h5 class="text-muted small text-uppercase">Doluluk Oranı</h5>
+                    <div class="display-6 fw-bold text-info">
+                        @{
+                            var total = Model.Salon?.SalonKapasitesi ?? 1;
+                            var sold = biletler?.Count(x => x.DoluMu) ?? 0;
+                            var percent = (sold * 100) / (total == 0 ? 1 : total);
+                        }
+                        %@percent
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SATIŞ DURUMU VE İŞLEMLER -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="mb-3"><i class="fa-solid fa-cart-shopping me-2"></i>Satış Durumu</h5>
+                    @if(Model.SatisAktifMi)
+                    {
+                        <div class="alert alert-success d-flex align-items-center mb-0" role="alert">
+                            <i class="fa-solid fa-circle-check me-2 fs-4"></i>
+                            <div>
+                                <strong>Satışa Açık</strong><br>
+                                <small>Bu etkinlik için bilet satışı aktif durumda.</small>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-secondary d-flex align-items-center mb-0" role="alert">
+                            <i class="fa-solid fa-circle-xmark me-2 fs-4"></i>
+                            <div>
+                                <strong>Satışa Kapalı</strong><br>
+                                <small>Bu etkinlik için bilet satışı henüz başlamadı.</small>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="col-md-6 text-end">
+                    @if(Model.SatisAktifMi)
+                    {
+                        <a asp-action="SatisKapat" asp-route-id="@Model.Id" class="btn btn-danger btn-lg" onclick="return confirm('Bu etkinliğin satışını kapatmak istediğinize emin misiniz?')">
+                            <i class="fa-solid fa-stop me-2"></i>Satışı Kapat
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-action="SatisAc" asp-route-id="@Model.Id" class="btn btn-success btn-lg" onclick="return confirm('Bu etkinliği satışa açmak istediğinize emin misiniz?')">
+                            <i class="fa-solid fa-play me-2"></i>Satışa Aç
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KOLTUK DÜZENİ -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 border-bottom">
+            <h5 class="m-0"><i class="fa-solid fa-couch me-2"></i>Koltuk Düzeni ve Satış Durumu</h5>
+        </div>
+        <div class="card-body bg-light text-center p-5">
+            <div class="stage-mb-5 mx-auto bg-dark text-white rounded py-2 mb-5" style="max-width: 600px;">
+                SAHNE
+            </div>
+            
+            <div id="seating-area" class="d-flex flex-column align-items-center gap-3">
+                <!-- JS ile doldurulacak -->
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Yükleniyor...</span>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center gap-4 mt-5">
+                <div class="d-flex align-items-center">
+                    <div class="seat-legend bg-secondary me-2"></div> Boş
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="seat-legend bg-success me-2"></div> Bubilet
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="seat-legend bg-warning me-2"></div> Biletinial
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="seat-legend bg-danger me-2"></div> Satılmış
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .seat-row {
+        gap: 10px;
+    }
+    .seat {
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: transform 0.2s;
+        color: white;
+        position: relative;
+    }
+    .seat:hover {
+        transform: scale(1.1);
+        z-index: 10;
+    }
+    /* Renkler */
+    .seat.empty { background-color: #95a5a6; } /* Gri */
+    .seat.sold { background-color: #e74c3c; } /* Kırmızı */
+    .seat.bubilet { background-color: #28a745; } /* Yeşil - Bubilet */
+    .seat.biletinial { background-color: #ffc107; } /* Sarı - Biletinial */
+    
+    .seat-legend {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Koltuk planı JSON'u
+        var planJson = @Html.Raw(Model.Salon?.SeatingPlan?.PlanJson ?? "{}");
+        var tickets = @Html.Raw(Json.Serialize(biletler?.Select(b => new { b.KoltukNo, b.DoluMu, b.SatisPlatformu, b.Fiyat })));
+
+        var seatingArea = $('#seating-area');
+        seatingArea.empty();
+
+        if (!planJson.koltuklar || planJson.koltuklar.length === 0) {
+            seatingArea.html('<p class="text-muted">Koltuk düzeni bulunamadı.</p>');
+            return;
+        }
+
+        // 1. Koltukları satır bazlı grupla
+        var rows = {};
+        planJson.koltuklar.forEach(function(seat) {
+            // Uniq satır anahtarı: Blok + Sira (Örn: A-1)
+            var rowKey = seat.blok + '-' + seat.sira;
+            if (!rows[rowKey]) {
+                rows[rowKey] = [];
+            }
+            rows[rowKey].push(seat);
+        });
+
+        // 2. Her satırı render et
+        Object.keys(rows).forEach(function(key) {
+            var rowSeats = rows[key];
+            // Numaraya göre sırala
+            rowSeats.sort((a, b) => a.numara - b.numara);
+
+            var rowDiv = $('<div>').addClass('d-flex seat-row mb-2');
+            
+            // Satır başlığı (A-1 vs yerine sadece A veya 1 yazabiliriz ama şimdilik key)
+            // Blok ismini gösterelim
+            rowDiv.append($('<div>').addClass('fw-bold me-2 align-self-center').text(key).css('width','40px'));
+
+            rowSeats.forEach(function(seat) {
+                // Koltuk numarasını oluştur (Örn: A-15)
+                var seatId = seat.blok + '-' + seat.sira + seat.numara;
+                
+                // Bilet durumunu bul
+                var ticket = tickets.find(t => t.koltukNo === seatId);
+                var isSold = ticket && ticket.doluMu;
+                var price = ticket ? ticket.fiyat : '-';
+                var platform = ticket ? ticket.satisPlatformu : null;
+
+                var seatEl = $('<div>')
+                    .addClass('seat')
+                    .text(seat.numara);
+                
+                // Satış durumunu kontrol et ve tooltip ekle
+                if (isSold) {
+                    if (platform === 'Bubilet') {
+                        seatEl.addClass('bubilet');
+                        seatEl.attr('title', 'Koltuk: ' + seatId + ' - Bubilet - Fiyat: ' + price + '₺');
+                    } else if (platform === 'Biletinial') {
+                        seatEl.addClass('biletinial');
+                        seatEl.attr('title', 'Koltuk: ' + seatId + ' - Biletinial - Fiyat: ' + price + '₺');
+                    } else {
+                        seatEl.addClass('sold');
+                        var platforminfo = platform ? ' (' + platform + ')' : '';
+                        seatEl.attr('title', 'Koltuk: ' + seatId + ' - Satıldı' + platforminfo + ' - Fiyat: ' + price + '₺');
+                    }
+                } else {
+                    seatEl.addClass('empty');
+                    seatEl.attr('title', 'Koltuk: ' + seatId + ' - Boş - Fiyat: ' + price + '₺');
+                }
+                
+                rowDiv.append(seatEl);
+            });
+
+            seatingArea.append(rowDiv);
+        });
+    });
+</script>

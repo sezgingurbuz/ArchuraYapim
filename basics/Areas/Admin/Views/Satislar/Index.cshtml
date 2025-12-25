@@ -1,0 +1,183 @@
+@model List<basics.Areas.Admin.Models.Etkinlik>
+@{
+    ViewData["Title"] = "Bilet Satış";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var sehirler = ViewBag.Sehirler as List<string>;
+}
+
+<div class="container py-5">
+    
+    <style>
+        .filters-section { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #e9ecef; }
+        .filters-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .filter-controls { display: flex; gap: 20px; flex-wrap: wrap; }
+        .filter-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 5px; }
+        .filter-group label { font-size: 0.85rem; font-weight: 600; color: #6c757d; }
+        .filter-group input, .filter-group select { padding: 8px 12px; border: 1px solid #ced4da; border-radius: 6px; }
+        .btn-view { background: none; border: none; color: #0d6efd; font-size: 0.9rem; cursor: pointer; text-decoration: underline; }
+    </style>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fa-solid fa-cash-register me-2"></i>Bilet Satış</h2>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="fa-solid fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+        </div>
+    }
+
+    <!-- ETKİNLİKLER LİSTESİ -->
+    <div class="card mt-5 shadow-sm border-0">
+        <div class="filters-section mx-3 mt-3">
+            <div class="filters-header">
+                <h5 class="m-0 text-muted"><i class="fa-solid fa-filter me-2"></i>Filtrele ve Ara</h5>
+                <button class="btn-view" onclick="resetFilters()">Filtreleri Temizle</button>
+            </div>
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label>Etkinlik Ara</label>
+                    <input type="text" id="searchInput" placeholder="Etkinlik adı..." onkeyup="applyFilters()">
+                </div>
+                <div class="filter-group">
+                    <label>Şehir Filtrele</label>
+                    <select id="cityFilter" onchange="applyFilters()">
+                        <option value="">Tümü</option>
+                        @if (sehirler != null)
+                        {
+                            foreach (var sehir in sehirler)
+                            {
+                                <option value="@sehir">@sehir</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>&nbsp;</label>
+                    <div class="form-check" style="padding-top: 8px;">
+                        <input class="form-check-input" type="checkbox" id="satisaAcikFilter" onchange="applyFilters()">
+                        <label class="form-check-label" for="satisaAcikFilter" style="font-weight: normal; color: #212529;">
+                            Sadece Satışa Açık Etkinlikler
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-header bg-white py-3 border-top">
+            <h5 class="m-0 text-muted"><i class="fa-solid fa-list me-2"></i>Mevcut Etkinlikler</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Etkinlik Adı</th>
+                        <th>Tür</th>
+                        <th>Salon (Şehir)</th>
+                        <th>Tarih & Saat</th>
+                        <th>Durum</th>
+                        <th class="text-end pe-4">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var etkinlik in Model)
+                        {
+                            <tr data-satis-aktif="@etkinlik.SatisAktifMi.ToString().ToLower()">
+                                <td class="ps-4 fw-bold">@etkinlik.EtkinlikAdi</td>
+                                <td><span class="badge bg-secondary">@etkinlik.Tur</span></td>
+                                <td>@etkinlik.Salon?.SalonAdi (@etkinlik.Salon?.Sehir)</td>
+                                <td>
+                                    <div>@etkinlik.TarihSaat.ToString("dd.MM.yyyy")</div>
+                                    <small class="text-muted">@etkinlik.TarihSaat.ToString("HH:mm")</small>
+                                </td>
+                                <td>
+                                    @if(etkinlik.SatisAktifMi)
+                                    {
+                                         <span class="badge bg-success">Satışta</span>
+                                    }
+                                    else
+                                    {
+                                         <span class="badge bg-secondary">Satışa Kapalı</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group">
+                                        @if(etkinlik.SatisAktifMi)
+                                        {
+                                            <a asp-action="SatisYap" asp-route-id="@etkinlik.Id" class="btn btn-primary btn-sm" title="Satış Yap">
+                                                <i class="fa-solid fa-ticket me-1"></i>Satış Yap
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-secondary btn-sm" disabled title="Satış Kapalı">
+                                                <i class="fa-solid fa-ban me-1"></i>Satış Kapalı
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                Henüz planlanmış bir etkinlik bulunmuyor.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function applyFilters() {
+        var searchInput = document.getElementById("searchInput").value.toUpperCase();
+        var cityFilter = document.getElementById("cityFilter").value.toUpperCase();
+        var satisaAcikFilter = document.getElementById("satisaAcikFilter").checked;
+        var table = document.querySelector("table");
+        var tr = table.getElementsByTagName("tr");
+
+        for (var i = 1; i < tr.length; i++) {
+            var tdName = tr[i].getElementsByTagName("td")[0]; // Etkinlik Adı
+            var tdSalon = tr[i].getElementsByTagName("td")[2]; // Salon (Şehir)
+            var satisAktif = tr[i].getAttribute("data-satis-aktif") === "true";
+
+            if (tdName && tdSalon) {
+                var txtName = tdName.textContent || tdName.innerText;
+                var txtSalon = tdSalon.textContent || tdSalon.innerText;
+
+                var matchesSearch = txtName.toUpperCase().indexOf(searchInput) > -1;
+                var matchesCity = cityFilter === "" || txtSalon.toUpperCase().indexOf(cityFilter) > -1;
+                var matchesSatis = !satisaAcikFilter || satisAktif;
+
+                if (matchesSearch && matchesCity && matchesSatis) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+
+    function resetFilters() {
+        document.getElementById("searchInput").value = "";
+        document.getElementById("cityFilter").value = "";
+        document.getElementById("satisaAcikFilter").checked = false;
+        
+        applyFilters();
+    }
+
+    // Başarı mesajını 3 saniye sonra kaybet
+    setTimeout(function() {
+        $('.alert-success').fadeOut('slow');
+    }, 3000);
+</script>

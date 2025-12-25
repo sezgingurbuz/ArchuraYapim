@@ -1,0 +1,342 @@
+@model basics.Areas.Admin.Models.Etkinlik
+@{
+    ViewData["Title"] = "Bilet Satış - " + Model.EtkinlikAdi;
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var biletler = ViewBag.Biletler as List<basics.Areas.Admin.Models.EtkinlikKoltuk>;
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fa-solid fa-ticket me-2"></i>Bilet Satış</h2>
+            <p class="text-muted mb-0">@Model.EtkinlikAdi - @Model.Salon?.SalonAdi</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-arrow-left me-2"></i>Geri Dön
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fa-solid fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fa-solid fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- KOLTUK DÜZENİ (SOL) -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="m-0"><i class="fa-solid fa-couch me-2"></i>Koltuk Seçimi</h5>
+                </div>
+                <div class="card-body bg-light text-center p-4">
+                    <div class="stage-mb-4 mx-auto bg-dark text-white rounded py-2 mb-4" style="max-width: 600px;">
+                        SAHNE
+                    </div>
+                    
+                    <div id="seating-area" class="d-flex flex-column align-items-center gap-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Yükleniyor...</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-4 mt-4">
+                        <div class="d-flex align-items-center">
+                            <div class="seat-legend bg-secondary me-2"></div> Boş
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="seat-legend bg-primary me-2"></div> Seçili
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="seat-legend bg-success me-2"></div> Bubilet
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="seat-legend bg-warning me-2"></div> Biletinial
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="seat-legend bg-danger me-2"></div> Satılmış
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SATIŞ FORMU (SAĞ) -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="m-0"><i class="fa-solid fa-cash-register me-2"></i>Satış Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <!-- PLATFORM SEÇİMİ -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Satış Platformu</label>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-secondary platform-btn" data-platform="Archura">
+                                <i class="fa-solid fa-globe me-2"></i>Archura (Direkt Satış)
+                            </button>
+                            <button type="button" class="btn btn-outline-success platform-btn" data-platform="Bubilet">
+                                <i class="fa-solid fa-ticket me-2"></i>Bubilet
+                            </button>
+                            <button type="button" class="btn btn-outline-warning platform-btn" data-platform="Biletinial">
+                                <i class="fa-solid fa-ticket-alt me-2"></i>Biletinial
+                            </button>
+                        </div>
+                    </div>
+
+                    <hr class="my-3" />
+
+                    <form asp-action="SatisYap" method="post" id="salesForm">
+                        <input type="hidden" name="etkinlikId" value="@Model.Id" />
+                        <input type="hidden" name="satisPlatformu" id="selectedPlatform" value="Archura" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Seçilen Koltuklar</label>
+                            <input type="text" name="koltuklar" id="selectedSeats" class="form-control" 
+                                   placeholder="Koltuk seçiniz..." readonly required />
+                            <small class="text-muted">Koltukları seçmek için tıklayın</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Bilet Fiyatı (₺)</label>
+                            <input type="number" name="fiyat" class="form-control" 
+                                   placeholder="100" step="0.01" min="0" required />
+                        </div>
+
+                        <hr class="my-3" />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Ad <span class="text-danger">*</span></label>
+                            <input type="text" name="musteriAdi" class="form-control" 
+                                   placeholder="Müşteri adı" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Soyad <span class="text-danger">*</span></label>
+                            <input type="text" name="musteriSoyadi" class="form-control" 
+                                   placeholder="Müşteri soyadı" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Telefon <span class="text-danger">*</span></label>
+                            <input type="tel" name="musteriTelefon" class="form-control" 
+                                   placeholder="05xx xxx xx xx" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">E-mail</label>
+                            <input type="email" name="musteriEmail" class="form-control" 
+                                   placeholder="musteri@example.com" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Ödeme Yöntemi</label>
+                            <select name="odemeYontemi" class="form-select" required>
+                                <option value="">Seçiniz...</option>
+                                <option value="Nakit">Nakit</option>
+                                <option value="Kart">Kart</option>
+                                <option value="EFT">EFT</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg w-100">
+                            <i class="fa-solid fa-check me-2"></i>Satışı Tamamla
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .seat-row {
+        gap: 8px;
+    }
+    .seat {
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: white;
+        font-weight: 600;
+    }
+    .seat:hover:not(.sold) {
+        transform: scale(1.1);
+        z-index: 10;
+    }
+    .seat.empty { 
+        background-color: #6c757d; 
+    }
+    .seat.selected { 
+        background-color: #0d6efd;
+        box-shadow: 0 0 10px rgba(13, 110, 253, 0.5);
+    }
+    .seat.sold { 
+        background-color: #dc3545;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+    .seat.bubilet {
+        background-color: #198754; /* Green */
+        cursor: not-allowed;
+        opacity: 0.9;
+    }
+    .seat.biletinial {
+        background-color: #ffc107; /* Yellow/Warning */
+        cursor: not-allowed;
+        opacity: 0.9;
+    }
+    
+    .seat-legend {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        var selectedSeats = [];
+        
+        // Platform seçimi
+        $('.platform-btn').click(function() {
+            // Tüm butonlardan active class'ı kaldır
+            $('.platform-btn').removeClass('btn-success btn-warning btn-secondary').addClass('btn-outline-secondary btn-outline-success btn-outline-warning');
+            $('.platform-btn[data-platform="Archura"]').removeClass('btn-outline-secondary').addClass('btn-outline-secondary');
+            $('.platform-btn[data-platform="Bubilet"]').removeClass('btn-outline-success').addClass('btn-outline-success');
+            $('.platform-btn[data-platform="Biletinial"]').removeClass('btn-outline-warning').addClass('btn-outline-warning');
+            
+            // Seçilen butonu aktif yap
+            var platform = $(this).data('platform');
+            
+            if (platform === 'Bubilet') {
+                $(this).removeClass('btn-outline-success').addClass('btn-success');
+                // Otomatik doldur
+                $('input[name="musteriAdi"]').val('Bubilet Satışı').prop('readonly', true);
+                $('input[name="musteriSoyadi"]').val('Bubilet Satışı').prop('readonly', true);
+                $('input[name="musteriTelefon"]').val('-').prop('readonly', true);
+                $('input[name="musteriEmail"]').val('bubilet@platform.com').prop('readonly', true);
+            } else if (platform === 'Biletinial') {
+                $(this).removeClass('btn-outline-warning').addClass('btn-warning');
+                // Otomatik doldur
+                $('input[name="musteriAdi"]').val('Biletinial Satışı').prop('readonly', true);
+                $('input[name="musteriSoyadi"]').val('Biletinial Satışı').prop('readonly', true);
+                $('input[name="musteriTelefon"]').val('-').prop('readonly', true);
+                $('input[name="musteriEmail"]').val('biletinial@platform.com').prop('readonly', true);
+            } else {
+                $(this).removeClass('btn-outline-secondary').addClass('btn-secondary');
+                // Alanları temizle ve readonly'i kaldır
+                $('input[name="musteriAdi"]').val('').prop('readonly', false);
+                $('input[name="musteriSoyadi"]').val('').prop('readonly', false);
+                $('input[name="musteriTelefon"]').val('').prop('readonly', false);
+                $('input[name="musteriEmail"]').val('').prop('readonly', false);
+            }
+            
+            // Hidden field'ı güncelle
+            $('#selectedPlatform').val(platform);
+        });
+        
+        // Sayfa yüklendiğinde Archura'yı aktif yap
+        $('.platform-btn[data-platform="Archura"]').click();
+        
+        // Koltuk planı JSON'u
+        var planJson = @Html.Raw(Model.Salon?.SeatingPlan?.PlanJson ?? "{}");
+        var tickets = @Html.Raw(Json.Serialize(biletler?.Select(b => new { b.KoltukNo, b.DoluMu, b.SatisPlatformu })));
+
+        var seatingArea = $('#seating-area');
+        seatingArea.empty();
+
+        if (!planJson.koltuklar || planJson.koltuklar.length === 0) {
+            seatingArea.html('<p class="text-muted">Koltuk düzeni bulunamadı.</p>');
+            return;
+        }
+
+        // Koltukları satır bazlı grupla
+        var rows = {};
+        planJson.koltuklar.forEach(function(seat) {
+            var rowKey = seat.blok + '-' + seat.sira;
+            if (!rows[rowKey]) {
+                rows[rowKey] = [];
+            }
+            rows[rowKey].push(seat);
+        });
+
+        // Her satırı render et
+        Object.keys(rows).forEach(function(key) {
+            var rowSeats = rows[key];
+            rowSeats.sort((a, b) => a.numara - b.numara);
+
+            var rowDiv = $('<div>').addClass('d-flex seat-row mb-2');
+            rowDiv.append($('<div>').addClass('fw-bold me-2 align-self-center').text(key).css('width','40px'));
+
+            rowSeats.forEach(function(seat) {
+                var seatId = seat.blok + '-' + seat.sira + seat.numara;
+                var ticket = tickets.find(t => t.koltukNo === seatId);
+                var isSold = ticket && ticket.doluMu;
+                var platform = ticket ? ticket.satisPlatformu : null;
+
+                var seatEl = $('<div>')
+                    .addClass('seat')
+                    .text(seat.numara)
+                    .attr('data-seat', seatId);
+                
+                // Platform bazlı renklendirme
+                if (isSold) {
+                    if (platform === 'Bubilet') {
+                        seatEl.addClass('bubilet');
+                        seatEl.attr('title', 'Koltuk: ' + seatId + ' - Bubilet');
+                    } else if (platform === 'Biletinial') {
+                        seatEl.addClass('biletinial');
+                        seatEl.attr('title', 'Koltuk: ' + seatId + ' - Biletinial');
+                    } else {
+                        seatEl.addClass('sold');
+                        seatEl.attr('title', 'Koltuk: ' + seatId + ' - Satılmış');
+                    }
+                } else {
+                    seatEl.addClass('empty');
+                    seatEl.attr('title', 'Koltuk: ' + seatId);
+                }
+                
+                if (!isSold) {
+                    seatEl.click(function() {
+                        var seatNo = $(this).attr('data-seat');
+                        
+                        if ($(this).hasClass('selected')) {
+                            // Seçimi kaldır
+                            $(this).removeClass('selected').addClass('empty');
+                            selectedSeats = selectedSeats.filter(s => s !== seatNo);
+                        } else {
+                            // Seç
+                            $(this).removeClass('empty').addClass('selected');
+                            selectedSeats.push(seatNo);
+                        }
+                        
+                        // Textbox'ı güncelle
+                        $('#selectedSeats').val(selectedSeats.join(', '));
+                    });
+                }
+                
+                rowDiv.append(seatEl);
+            });
+
+            seatingArea.append(rowDiv);
+        });
+    });
+</script>

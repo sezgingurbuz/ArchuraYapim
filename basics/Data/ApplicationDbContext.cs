@@ -12,6 +12,10 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<SeatingPlan> SeatingPlans { get; set; }
     public DbSet<Salon> Salonlar { get; set; }
+    public DbSet<Etkinlik> Etkinlikler { get; set; }
+    public DbSet<EtkinlikKoltuk> EtkinlikKoltuklari { get; set; }
+    public DbSet<AdminUser> AdminUsers { get; set; }
+    public DbSet<EtkinlikRapor> EtkinlikRaporlari { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,6 +29,13 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.PlanJson).IsRequired();
             entity.Property(e => e.CreatedAt).HasDefaultValue(DateTime.UtcNow);
             entity.Property(e => e.UpdatedAt).HasDefaultValue(DateTime.UtcNow);
+        });
+
+        modelBuilder.Entity<AdminUser>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.userName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.passwordHash).IsRequired();
         });
     }
 }
