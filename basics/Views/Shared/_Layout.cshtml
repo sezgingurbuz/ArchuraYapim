@@ -7,28 +7,253 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/basics.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/photo-style.css"/>
+    <link rel="stylesheet" href="~/css/index-style.css"/>
     <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        .navbar-custom {
+            background-color: var(--navbar-bg) !important;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            transition: background-color 0.3s ease;
+        }
+        
+        .navbar-brand img {
+            height: 60px;
+            width: auto;
+            transition: transform 0.3s ease;
+        }
+        
+        .navbar-brand:hover img {
+            transform: scale(1.05);
+        }
+        
+        .navbar-custom .nav-link {
+            color: var(--navbar-text) !important;
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin: 0 1rem;
+            padding: 0.5rem 1rem !important;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        
+        .navbar-custom .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background-color: #fdb414;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        
+        .navbar-custom .nav-link:hover {
+            color: #fdb414 !important;
+        }
+        
+        .navbar-custom .nav-link:hover::after {
+            width: 80%;
+        }
+        
+        .navbar-custom .nav-link.active {
+            color: #fdb414 !important;
+        }
+        
+        .navbar-custom .nav-link.active::after {
+            width: 80%;
+        }
+        
+        .navbar-toggler {
+            border-color: #fdb414;
+        }
+        
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23fdb414' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        
+        .theme-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--navbar-text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: color 0.3s;
+        }
+        
+        .theme-toggle-btn:hover {
+            color: #fdb414;
+        }
+
+        /* Giriş Yap Butonu */
+        .btn-login-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #c8af8b, #a89068);
+            color: white !important;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(200, 175, 139, 0.3);
+        }
+
+        .btn-login-nav:hover {
+            background: linear-gradient(135deg, #a89068, #8b7355);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(200, 175, 139, 0.4);
+            color: white !important;
+        }
+
+        .btn-login-nav i {
+            font-size: 1rem;
+        }
+
+        /* Kullanıcı Dropdown */
+        .user-dropdown-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--card-bg);
+            color: var(--text-color) !important;
+            border: 2px solid var(--border-color);
+            border-radius: 25px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .user-dropdown-btn:hover,
+        .user-dropdown-btn:focus {
+            border-color: #c8af8b;
+            background: var(--card-bg);
+            color: #c8af8b !important;
+        }
+
+        .user-dropdown-btn i {
+            font-size: 1.2rem;
+            color: #c8af8b;
+        }
+
+        .user-name {
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-dropdown-menu {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 8px 0;
+            min-width: 180px;
+        }
+
+        .user-dropdown-menu .dropdown-item {
+            padding: 10px 16px;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .user-dropdown-menu .dropdown-item:hover {
+            background: rgba(200, 175, 139, 0.1);
+            color: #c8af8b;
+        }
+
+        .user-dropdown-menu .dropdown-item i {
+            width: 18px;
+            text-align: center;
+            color: #c8af8b;
+        }
+
+        .user-dropdown-menu .dropdown-divider {
+            border-color: var(--border-color);
+            margin: 4px 0;
+        }
+
+        @@media (max-width: 576px) {
+            .navbar-custom .nav-link {
+                margin: 0.5rem 0;
+            }
+
+            .btn-login-nav span,
+            .user-name {
+                display: none;
+            }
+
+            .btn-login-nav,
+            .user-dropdown-btn {
+                padding: 8px 12px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-custom">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Archura Yapim</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/img/home/logo-yatay-yeni.png" alt="Archura Yapım Logo" id="navbar-logo" />
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-center">
+                    <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Genç Werther'in Acıları</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link" asp-area="" asp-controller="Tickets" asp-action="Index">Etkinlikler</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Gallery" asp-action="Index">Galeri</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">Hakkımızda</a>
                         </li>
                     </ul>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    @if (User.IsInRole("Customer"))
+                    {
+                        <div class="dropdown">
+                            <button class="btn user-dropdown-btn dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle"></i>
+                                <span class="user-name">@User.Identity?.Name</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end user-dropdown-menu" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" asp-controller="Tickets" asp-action="Biletlerim"><i class="fas fa-ticket-alt"></i> Biletlerim</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profilim</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</a></li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a class="btn btn-login-nav" asp-controller="Account" asp-action="Login">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Giriş Yap</span>
+                        </a>
+                    }
+                    <button class="theme-toggle-btn" id="theme-toggle" title="Temayı Değiştir">
+                        <i class="fas fa-moon"></i>
+                    </button>
                 </div>
             </div>
         </nav>
@@ -37,5 +262,78 @@
         @RenderBody()
     </main>
 
+    <!-- Alt Bilgi (Footer) -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <div class="footer-logo">
+                    <img src="/img/home/logo-yatay-yeni.png" alt="Archura Yapım Logo" id="footer-logo" />
+                </div>
+            </div>
+            <div class="footer-right">
+                <h4>İletişim</h4>
+                <a href="mailto:archurayapim@gmail.com" class="footer-link">
+                    <i class="bi bi-envelope-fill"></i> archurayapim@gmail.com
+                </a>
+                <a href="https://www.instagram.com/archurayapim/" target="_blank" class="footer-link">
+                    <i class="bi bi-instagram"></i> archurayapim
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; @DateTime.Now.Year Archura Yapım. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        const toggleBtn = document.getElementById('theme-toggle');
+        const navbarLogo = document.getElementById('navbar-logo');
+        const footerLogo = document.getElementById('footer-logo');
+        const icon = toggleBtn.querySelector('i');
+        
+        // Logolar
+        const darkThemeLogo = '/img/home/logo-yatay-yeni.png'; // Koyu tema için (veya varsayılan)
+        const lightThemeLogo = '/img/home/logo-yatay-white.png'; // Açık tema için (İsimlendirme ters olabilir ama istek: "Açık temada logo logo-yatay-white.png")
+        // Not: Kullanıcı "Açık temada logo logo-yatay-white.png" dedi. Genelde açık temada koyu logo kullanılır. 
+        // Eğer logo-yatay-white.png beyaz ise, #f5f5f5 üzerinde görünmez.
+        // Kullanıcının isteğine sadık kalıyorum.
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            if (theme === 'dark') {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                // Koyu temada varsayılan logo (muhtemelen açık renkli / beyaz)
+                navbarLogo.src = darkThemeLogo;
+                footerLogo.src = darkThemeLogo;
+            } else {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                // Açık temada istenen logo
+                navbarLogo.src = lightThemeLogo;
+                footerLogo.src = lightThemeLogo;
+            }
+        }
+
+        // Varsayılan tema kontrolü (OS tercihi veya localStorage)
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme) {
+            setTheme(savedTheme);
+        } else {
+            setTheme(prefersDark ? 'dark' : 'light');
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+    </script>
 </body>
 </html>

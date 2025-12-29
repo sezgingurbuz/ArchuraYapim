@@ -7,7 +7,7 @@ using basics.Areas.Admin.Models;
 namespace basics.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize] // Sadece giriş yapanlar görsün
+    [Authorize(AuthenticationSchemes = "AdminScheme", Roles = "Admin,Okan")]
     public class RaporController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -98,7 +98,7 @@ namespace basics.Areas.Admin.Controllers
                 EFTSatisAdedi = eftSatislar.Count(),
                 EFTHasilat = eftSatislar.Sum(k => k.Fiyat),
                 RaporTarihi = DateTime.Now,
-                RaporlayanKullanici = "Admin" // TODO: Login sisteminden al
+                RaporlayanKullanici = User.Identity.Name ?? "Bilinmiyor"
             };
 
             _context.EtkinlikRaporlari.Add(rapor);

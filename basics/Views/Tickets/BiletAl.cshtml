@@ -1,0 +1,462 @@
+@model basics.Areas.Admin.Models.Etkinlik
+@{
+    ViewData["Title"] = "Bilet Al - " + Model.EtkinlikAdi;
+    Layout = "_Layout";
+    var biletler = ViewBag.Biletler as List<basics.Areas.Admin.Models.EtkinlikKoltuk>;
+}
+
+<link rel="stylesheet" href="~/css/bilet-style.css" />
+
+<div class="bilet-page">
+    <div class="container py-4">
+        <!-- Başlık -->
+        <div class="bilet-header mb-4">
+            <a asp-action="Index" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                <span>Etkinliklere Dön</span>
+            </a>
+            <div class="event-info">
+                <h1>@Model.EtkinlikAdi</h1>
+                <div class="event-details">
+                    <span><i class="fas fa-calendar-alt"></i> @Model.TarihSaat.ToString("dd MMMM yyyy, dddd")</span>
+                    <span><i class="fas fa-clock"></i> @Model.TarihSaat.ToString("HH:mm")</span>
+                    <span><i class="fas fa-map-marker-alt"></i> @Model.Salon?.SalonAdi, @Model.Salon?.Sehir</span>
+                </div>
+            </div>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <span>@TempData["SuccessMessage"]</span>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>@TempData["ErrorMessage"]</span>
+            </div>
+        }
+
+        <div class="bilet-content">
+            <!-- Satın Alma Formu -->
+            <div class="purchase-section">
+                <div class="section-card sticky-form">
+                    <div class="section-header">
+                        <h2><i class="fas fa-shopping-cart"></i> Satın Al</h2>
+                    </div>
+                    <div class="section-body">
+                        <form asp-action="BiletAl" method="post" id="purchaseForm">
+                            <input type="hidden" name="etkinlikId" value="@Model.Id" />
+                            
+                            <div class="form-group">
+                                <label>Seçilen Koltuklar</label>
+                                <input type="text" name="koltuklar" id="selectedSeats" class="form-input" 
+                                       placeholder="Koltuk seçiniz..." readonly required />
+                                <small>Koltukları seçmek için üstteki alandan tıklayın</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Bilet Fiyatı (₺)</label>
+                                <input type="number" name="fiyat" class="form-input" 
+                                       value="150" step="0.01" min="0" required />
+                            </div>
+
+                            <div class="form-divider"></div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Ad <span class="required">*</span></label>
+                                    <input type="text" name="musteriAdi" class="form-input" 
+                                           value="@ViewBag.KullaniciAdi" placeholder="Adınız" required />
+                                </div>
+                                <div class="form-group">
+                                    <label>Soyad <span class="required">*</span></label>
+                                    <input type="text" name="musteriSoyadi" class="form-input" 
+                                           value="@ViewBag.KullaniciSoyadi" placeholder="Soyadınız" required />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Telefon <span class="required">*</span></label>
+                                <input type="tel" name="musteriTelefon" class="form-input" 
+                                       value="@ViewBag.KullaniciTelefon" placeholder="05XX XXX XX XX" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label>E-posta</label>
+                                <input type="email" name="musteriEmail" class="form-input" 
+                                       value="@ViewBag.KullaniciEmail" placeholder="ornek@email.com" />
+                            </div>
+
+                            <div class="purchase-summary">
+                                <div class="summary-row">
+                                    <span>Seçilen Koltuk</span>
+                                    <span id="seatCount">0</span>
+                                </div>
+                                <div class="summary-row total">
+                                    <span>Toplam</span>
+                                    <span id="totalPrice">₺0.00</span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-purchase">
+                                <i class="fas fa-credit-card"></i>
+                                <span>Satın Al</span>
+                            </button>
+                        </form>
+
+                        @if (!User.IsInRole("Customer"))
+                        {
+                            <div class="login-prompt">
+                                <p>Hesabınız var mı? Giriş yaparak bilgilerinizi otomatik doldurun.</p>
+                                <button type="button" class="btn-login-link" onclick="showLoginPopup()">
+                                    <i class="fas fa-sign-in-alt"></i> Giriş Yap
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Koltuk Seçimi -->
+            <div class="seating-section">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2><i class="fas fa-couch"></i> Koltuk Seçimi</h2>
+                    </div>
+                    <div class="section-body">
+                        <div id="seating-area" class="seating-area">
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Koltuklar yükleniyor...</span>
+                            </div>
+                        </div>
+
+                        <div class="stage">SAHNE</div>
+
+                        <div class="seat-legend">
+                            <div class="legend-item">
+                                <div class="legend-box empty"></div>
+                                <span>Boş</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-box selected"></div>
+                                <span>Seçili</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-box sold"></div>
+                                <span>Satılmış</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-box decorative"></div>
+                                <span>Kayıt Dışı</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Login Popup Modal -->
+@if (!User.IsInRole("Customer"))
+{
+<div id="loginPopup" class="login-popup-overlay" style="display: none;">
+    <div class="login-popup-modal">
+        <button type="button" class="popup-close" onclick="hideLoginPopup()">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="popup-header">
+            <i class="fas fa-user-circle"></i>
+            <h3>Giriş Yap</h3>
+        </div>
+        
+        <div class="popup-body">
+            <form id="popupLoginForm" method="post">
+                <div class="popup-form-group">
+                    <label>E-posta</label>
+                    <input type="email" id="popupEmail" name="email" class="popup-input" 
+                           placeholder="ornek@email.com" required />
+                </div>
+                
+                <div class="popup-form-group">
+                    <label>Şifre</label>
+                    <input type="password" id="popupPassword" name="password" class="popup-input" 
+                           placeholder="••••••" required />
+                </div>
+                
+                <div id="popupError" class="popup-error" style="display: none;"></div>
+                
+                <div class="popup-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Giriş yapmadan devam ederseniz biletlerinizi sitemiz üzerinden görüntüleyemeyeceksiniz.</span>
+                </div>
+                
+                <a href="javascript:void(0)" class="guest-continue-link" onclick="hideLoginPopup()">
+                    <i class="fas fa-arrow-right"></i> Üyeliksiz devam et
+                </a>
+                
+                <button type="submit" class="popup-login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Giriş Yap
+                </button>
+            </form>
+            
+            <div class="popup-register">
+                <p>Hesabınız yok mu?</p>
+                <a asp-controller="Account" asp-action="Register" asp-route-returnUrl="@Context.Request.Path">
+                    Hemen kayıt olun
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        var selectedSeats = [];
+        var ticketPrice = parseFloat($('input[name="fiyat"]').val()) || 150;
+        
+        // Giriş yapmamış kullanıcı için popup'ı otomatik aç
+        @if (!User.IsInRole("Customer"))
+        {
+            <text>
+            showLoginPopup();
+            </text>
+        }
+        
+        // Fiyat değiştiğinde toplamı güncelle
+        $('input[name="fiyat"]').on('change keyup', function() {
+            ticketPrice = parseFloat($(this).val()) || 0;
+            updateSummary();
+        });
+        
+        function updateSummary() {
+            $('#seatCount').text(selectedSeats.length);
+            var total = selectedSeats.length * ticketPrice;
+            $('#totalPrice').text('₺' + total.toFixed(2));
+        }
+        
+        // --- Absolute Positioning Render Logic ---
+        try {
+            var SEAT_SIZE = 40; 
+            
+            // Backend'den gelen veri string ise parse et
+            var rawPlan = @Html.Raw(Model.Salon?.SeatingPlan?.PlanJson ?? "{}");
+            var planJson = typeof rawPlan === 'string' ? JSON.parse(rawPlan) : rawPlan;
+            
+            var rawTickets = @Html.Raw(Json.Serialize(biletler?.Select(b => new { b.KoltukNo, b.DoluMu })));
+            var tickets = rawTickets || [];
+
+            var seatingArea = $('#seating-area');
+            seatingArea.empty();
+            
+            if (!planJson || !planJson.koltuklar || planJson.koltuklar.length === 0) {
+                seatingArea.html('<p class="no-seats">Koltuk düzeni bulunamadı.</p>');
+                return;
+            } else {
+                // Canvas boyutunu hesapla
+                let maxX = -Infinity;
+                let maxY = -Infinity;
+                let minX = Infinity;
+                let minY = Infinity;
+
+                // Koordinatları güvenli şekilde hesapla
+                planJson.koltuklar.forEach(s => {
+                    const x = parseFloat(s.x);
+                    const y = parseFloat(s.y);
+                    if (!isNaN(x)) {
+                        if (x > maxX) maxX = x;
+                        if (x < minX) minX = x;
+                    }
+                    if (!isNaN(y)) {
+                        if (y > maxY) maxY = y;
+                        if (y < minY) minY = y;
+                    }
+                });
+
+                // Sahne koordinatlarını da hesaba kat
+                if (planJson.sahne) {
+                    const sX = parseFloat(planJson.sahne.x);
+                    const sY = parseFloat(planJson.sahne.y);
+                    const sW = parseFloat(planJson.sahne.width);
+                    const sH = parseFloat(planJson.sahne.height);
+                    
+                    if (!isNaN(sX) && !isNaN(sY)) {
+                        if (sX < minX) minX = sX;
+                        if (sY < minY) minY = sY;
+                        if (sX + sW > maxX) maxX = sX + sW;
+                        if (sY + sH > maxY) maxY = sY + sH;
+                    }
+                }
+
+                // Eğer geçerli koordinat yoksa varsayılan ata
+                if (minX === Infinity) minX = 0;
+                if (minY === Infinity) minY = 0;
+                if (maxX === -Infinity) maxX = 800;
+                if (maxY === -Infinity) maxY = 600;
+
+                // Offset (Padding) ekle
+                const PADDING = 50;
+                const exactWidth = maxX - minX + SEAT_SIZE + (PADDING * 2);
+                const exactHeight = maxY - minY + SEAT_SIZE + (PADDING * 2);
+                
+                // Scrollable Area Settings
+                seatingArea.css({
+                    'position': 'relative',
+                    'width': '100%',
+                    'height': '600px', 
+                    'overflow': 'auto',
+                    'background-color': '#111827',
+                    'border-radius': '8px',
+                    'display': 'flex',
+                    'align-items': 'center',
+                    'justify-content': 'center'
+                });
+
+                // Inner Canvas
+                var canvas = $('<div>').css({
+                    'position': 'relative',
+                    'width': exactWidth + 'px',
+                    'height': exactHeight + 'px',
+                    'min-width': exactWidth + 'px',
+                    'margin': 'auto'                // Center using margin
+                });
+                seatingArea.append(canvas);
+
+                // Render Loop
+                planJson.koltuklar.forEach(function(seat) {
+                    var seatId = seat.blok + '-' + seat.sira + seat.numara;
+                    var ticket = tickets.find(t => t.koltukNo === seatId);
+                    var isSold = ticket && ticket.doluMu;
+                    var isDecorative = seat.isDecorative === true;
+
+                    // X ve Y değerlerini offsetle
+                    var seatX = parseFloat(seat.x);
+                    var seatY = parseFloat(seat.y);
+                    
+                    // Eğer koordinat yoksa (eski veri), pas geç veya varsayılan yerleştir
+                    if (isNaN(seatX) || isNaN(seatY)) return;
+
+                    var posX = seatX - minX + PADDING;
+                    var posY = seatY - minY + PADDING;
+
+                    var displayText = seat.sira + seat.numara;
+                    var fontSize = '0.7rem';
+                    if((displayText + "").length > 3) fontSize = '0.6rem';
+                    if((displayText + "").length > 4) fontSize = '0.5rem';
+
+                    var seatEl = $('<div>')
+                        .addClass('seat')
+                        .text(displayText)
+                        .attr('data-seat', seatId)
+                        .attr('title', isDecorative ? seat.sira + seat.numara + ' (Kayıt Dışı)' : 'Koltuk: ' + seatId)
+                        .css({
+                            'position': 'absolute',
+                            'left': posX + 'px',
+                            'top': posY + 'px',
+                            'width': SEAT_SIZE + 'px',
+                            'height': SEAT_SIZE + 'px',
+                            'display': 'flex',
+                            'align-items': 'center',
+                            'justify-content': 'center',
+                            'font-size': fontSize,
+                            'line-height': '1'
+                        });
+                    
+                    if (isDecorative) {
+                        seatEl.addClass('decorative');
+                    } else if (isSold) {
+                        seatEl.addClass('sold');
+                    } else {
+                        seatEl.addClass('empty');
+                        seatEl.click(function() {
+                            var seatNo = $(this).attr('data-seat');
+                            
+                            if ($(this).hasClass('selected')) {
+                                $(this).removeClass('selected').addClass('empty');
+                                selectedSeats = selectedSeats.filter(s => s !== seatNo);
+                            } else {
+                                $(this).removeClass('empty').addClass('selected');
+                                selectedSeats.push(seatNo);
+                            }
+                            
+                            $('#selectedSeats').val(selectedSeats.join(', '));
+                            updateSummary();
+                        });
+                    }
+                    
+                    canvas.append(seatEl);
+                });
+
+            }
+        } catch (err) {
+            console.error("Seating render error:", err);
+            $('#seating-area').html('<div class="alert alert-danger">Koltuk düzeni yüklenirken hata oluştu: ' + err.message + '</div>');
+        }
+    });
+
+    // Login Popup Functions
+    function showLoginPopup() {
+        $('#loginPopup').fadeIn(200);
+        $('body').css('overflow', 'hidden');
+    }
+    
+    function hideLoginPopup() {
+        $('#loginPopup').fadeOut(200);
+        $('body').css('overflow', 'auto');
+        $('#popupError').hide();
+    }
+    
+    // Click outside to close
+    $(document).on('click', '.login-popup-overlay', function(e) {
+        if (e.target === this) {
+            hideLoginPopup();
+        }
+    });
+    
+    // ESC key to close
+    $(document).keydown(function(e) {
+        if (e.keyCode === 27) {
+            hideLoginPopup();
+        }
+    });
+    
+    // Login form submit
+    $('#popupLoginForm').submit(function(e) {
+        e.preventDefault();
+        
+        var email = $('#popupEmail').val();
+        var password = $('#popupPassword').val();
+        var returnUrl = '@Context.Request.Path';
+        
+        $.ajax({
+            url: '/Account/LoginAjax',
+            type: 'POST',
+            data: {
+                email: email,
+                password: password,
+                returnUrl: returnUrl
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Giriş başarılı, sayfayı yenile
+                    location.reload();
+                } else {
+                    // Hata göster
+                    $('#popupError').text(response.message).show();
+                }
+            },
+            error: function() {
+                $('#popupError').text('Bir hata oluştu. Lütfen tekrar deneyin.').show();
+            }
+        });
+    });
+</script>

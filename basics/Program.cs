@@ -7,14 +7,41 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Admin/Login/Index";
-        options.ExpireTimeSpan = TimeSpan.FromDays(1);
-        options.SlidingExpiration = true;
-        options.AccessDeniedPath = "/Admin/Login/AccessDenied";
-    });
+// İki ayrı Cookie Authentication Scheme - Admin ve Müşteri için
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = "CustomerScheme"; // Varsayılan müşteri
+    options.DefaultChallengeScheme = "CustomerScheme";
+})
+.AddCookie("AdminScheme", options =>
+{
+    options.LoginPath = "/Admin/Login/Index";
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.SlidingExpiration = true;
+    options.AccessDeniedPath = "/Admin/Login/AccessDenied";
+    options.Cookie.Name = "AdminAuth";
+})
+.AddCookie("CustomerScheme", options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.ExpireTimeSpan = TimeSpan.FromDays(30);
+    options.SlidingExpiration = true;
+    options.AccessDeniedPath = "/Account/Login";
+    options.Cookie.Name = "CustomerAuth";
+});
+
+// Authorization Policy'leri
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminPolicy", policy => 
+        policy.RequireAuthenticatedUser()
+              .AddAuthenticationSchemes("AdminScheme")
+              .RequireRole("Admin", "Editor", "Okan"));
+    
+    options.AddPolicy("CustomerPolicy", policy => 
+        policy.RequireAuthenticatedUser()
+              .AddAuthenticationSchemes("CustomerScheme"));
+});
 
 
 // Add DbContext with MySQL

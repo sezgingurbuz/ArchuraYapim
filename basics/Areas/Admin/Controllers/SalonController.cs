@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace basics.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "AdminScheme", Roles = "Admin")]
     public class SalonController : Controller
     {
         private readonly ILogger<SalonController> _logger;
@@ -40,8 +40,10 @@ namespace basics.Areas.Admin.Controllers
             .OrderByDescending(x => x.Id)
             .ToList(),
 
-                // Dropdown için planları getir
-                Planlar = _dbContext.SeatingPlans.ToList(),
+                // Dropdown için planları getir (Sadece boşta olanlar)
+                Planlar = _dbContext.SeatingPlans
+                                    .Where(p => p.Durum == "Pasif")
+                                    .ToList(),
                 MevcutSehirler = _dbContext.Salonlar
                     .Select(s => s.Sehir)
                     .Distinct()
@@ -87,7 +89,7 @@ namespace basics.Areas.Admin.Controllers
 
             // Hata durumunda listeleri tekrar doldururken de sadece Pasifleri getir
             model.Salonlar = _dbContext.Salonlar.Include(x => x.SeatingPlan).ToList();
-            model.Planlar = _dbContext.SeatingPlans.ToList();
+            model.Planlar = _dbContext.SeatingPlans.Where(p => p.Durum == "Pasif").ToList();
     
     return View("Index", model);
         }

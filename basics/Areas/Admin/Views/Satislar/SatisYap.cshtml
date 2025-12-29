@@ -40,14 +40,14 @@
                     <h5 class="m-0"><i class="fa-solid fa-couch me-2"></i>Koltuk Seçimi</h5>
                 </div>
                 <div class="card-body bg-light text-center p-4">
-                    <div class="stage-mb-4 mx-auto bg-dark text-white rounded py-2 mb-4" style="max-width: 600px;">
-                        SAHNE
-                    </div>
-                    
-                    <div id="seating-area" class="d-flex flex-column align-items-center gap-3">
+                    <div id="seating-area">
                         <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Yükleniyor...</span>
                         </div>
+                    </div>
+
+                    <div class="stage-mb-4 mx-auto bg-dark text-white rounded py-2 mb-4" style="max-width: 600px;">
+                        SAHNE
                     </div>
 
                     <div class="d-flex justify-content-center gap-4 mt-4">
@@ -202,11 +202,66 @@
         cursor: not-allowed;
         opacity: 0.9;
     }
+    .seat.decorative {
+        background-color: #7c3aed; /* Purple - Kayıt Dışı */
+        cursor: default;
+        opacity: 0.85;
+        pointer-events: none;
+    }
     
     .seat-legend {
         width: 20px;
         height: 20px;
         border-radius: 4px;
+    }
+    
+    /* Scrollable container for large seat layouts */
+    #seating-area {
+        max-width: 100%;
+        max-height: 600px;
+        overflow: auto;
+        padding: 20px;
+        width: fit-content;
+        min-width: 100%;
+        display: inline-flex !important;
+        flex-direction: column;
+        align-items: flex-start !important; /* Override align-items-center */
+    }
+    
+    /* Parent container must allow overflow */
+    .card-body {
+        overflow-x: auto !important;
+    }
+    
+    /* Bootstrap containers must not clip */
+    .row {
+        overflow-x: visible !important;
+    }
+    
+    .col-lg-8 {
+        overflow-x: visible !important;
+    }
+    
+    /* Mobile responsiveness */
+    @@media (max-width: 768px) {
+        #seating-area {
+            max-height: 500px;
+            padding: 10px;
+            width: max-content !important;
+            min-width: unset !important;
+        }
+        .card-body {
+            padding: 1rem !important;
+            overflow-x: auto !important;
+        }
+        .seat {
+            width: 28px !important;
+            height: 28px !important;
+            font-size: 0.65rem !important;
+        }
+        .seat-row {
+            gap: 5px !important;
+        }
     }
 </style>
 
@@ -268,37 +323,151 @@
             return;
         }
 
-        // Koltukları satır bazlı grupla
-        var rows = {};
-        planJson.koltuklar.forEach(function(seat) {
-            var rowKey = seat.blok + '-' + seat.sira;
-            if (!rows[rowKey]) {
-                rows[rowKey] = [];
-            }
-            rows[rowKey].push(seat);
+    // --- Absolute Positioning Render Logic - SatisYap ---
+    
+    try {
+        var SEAT_SIZE = 40; 
+        
+        // Backend'den gelen veri string ise parse et
+        var rawPlan = @Html.Raw(Model.Salon?.SeatingPlan?.PlanJson ?? "{}");
+        var planJson = typeof rawPlan === 'string' ? JSON.parse(rawPlan) : rawPlan;
+        
+        var rawTickets = @Html.Raw(Json.Serialize(biletler?.Select(b => new { b.KoltukNo, b.DoluMu, b.SatisPlatformu })));
+        var tickets = rawTickets || [];
+
+        var seatingArea = $('#seating-area');
+        seatingArea.empty();
+        
+        // Container stilini relative ve responsive yap
+        seatingArea.css({
+            'position': 'relative',
+            'width': '100%',
+            'height': '600px',
+            'overflow': 'auto',
+            'background-color': '#e9ecef', 
+            'border-radius': '8px',
+            'padding': '0',
+            'display': 'flex',
+            'align-items': 'center',
+            'justify-content': 'center'
         });
 
-        // Her satırı render et
-        Object.keys(rows).forEach(function(key) {
-            var rowSeats = rows[key];
-            rowSeats.sort((a, b) => a.numara - b.numara);
+        if (!planJson || !planJson.koltuklar || planJson.koltuklar.length === 0) {
+            seatingArea.html('<p class="text-muted p-4">Koltuk düzeni bulunamadı.</p>');
+            // Don't return, let execution finish safely
+        } else {
 
-            var rowDiv = $('<div>').addClass('d-flex seat-row mb-2');
-            rowDiv.append($('<div>').addClass('fw-bold me-2 align-self-center').text(key).css('width','40px'));
+            // Canvas boyutunu hesapla
+            let maxX = -Infinity;
+            let maxY = -Infinity;
+            let minX = Infinity;
+            let minY = Infinity;
 
-            rowSeats.forEach(function(seat) {
+            planJson.koltuklar.forEach(s => {
+                const x = parseFloat(s.x);
+                const y = parseFloat(s.y);
+                if (!isNaN(x)) {
+                    if (x > maxX) maxX = x;
+                    if (x < minX) minX = x;
+                }
+                if (!isNaN(y)) {
+                    if (y > maxY) maxY = y;
+                    if (y < minY) minY = y;
+                }
+            });
+
+            // Sahne koordinatlarını hesapla
+            if (planJson.sahne) {
+                const sX = parseFloat(planJson.sahne.x);
+                const sY = parseFloat(planJson.sahne.y);
+                const sW = parseFloat(planJson.sahne.width);
+                const sH = parseFloat(planJson.sahne.height);
+                
+                if (!isNaN(sX) && !isNaN(sY)) {
+                    if (sX < minX) minX = sX;
+                    if (sY < minY) minY = sY;
+                    if (sX + sW > maxX) maxX = sX + sW;
+                    if (sY + sH > maxY) maxY = sY + sH;
+                }
+            }
+
+             // Eğer geçerli koordinat yoksa varsayılan ata
+            if (minX === Infinity) minX = 0;
+            if (minY === Infinity) minY = 0;
+            if (maxX === -Infinity) maxX = 800;
+            if (maxY === -Infinity) maxY = 600;
+
+            // Offset (Padding) ekle
+            const PADDING = 50;
+            const exactWidth = maxX - minX + SEAT_SIZE + (PADDING * 2);
+            const exactHeight = maxY - minY + SEAT_SIZE + (PADDING * 2);
+            
+            // Scrollable Area Settings
+            seatingArea.css({
+                'position': 'relative',
+                'width': '100%',
+                'height': '600px', 
+                'overflow': 'auto',
+                'background-color': '#e9ecef', 
+                'border-radius': '8px'
+            });
+
+            // Inner Canvas
+            var canvas = $('<div>').css({
+                'position': 'relative',
+                'width': exactWidth + 'px',
+                'height': exactHeight + 'px',
+                'min-width': exactWidth + 'px',
+                'flex-shrink': '0',
+                'margin': 'auto'
+            });
+            seatingArea.append(canvas);
+
+            // Render Loop
+            planJson.koltuklar.forEach(function(seat) {
                 var seatId = seat.blok + '-' + seat.sira + seat.numara;
                 var ticket = tickets.find(t => t.koltukNo === seatId);
                 var isSold = ticket && ticket.doluMu;
                 var platform = ticket ? ticket.satisPlatformu : null;
+                var isDecorative = seat.isDecorative === true;
+
+                // X ve Y değerlerini offsetle
+                var seatX = parseFloat(seat.x);
+                var seatY = parseFloat(seat.y);
+                
+                if (isNaN(seatX) || isNaN(seatY)) return; // Skip invalid coordinates
+
+                var posX = seatX - minX + PADDING;
+                var posY = seatY - minY + PADDING;
+
+                var displayText = seat.sira + seat.numara;
+                var fontSize = '0.7rem';
+                if((displayText + "").length > 3) fontSize = '0.6rem';
+                if((displayText + "").length > 4) fontSize = '0.5rem';
 
                 var seatEl = $('<div>')
                     .addClass('seat')
-                    .text(seat.numara)
-                    .attr('data-seat', seatId);
+                    .text(seat.numara) // Admin panelde sadece numara göstermek yeterli olabilir, veya tam isim
+                    .text(displayText)
+                    .attr('data-seat', seatId)
+                    .css({
+                        'position': 'absolute',
+                        'left': posX + 'px',
+                        'top': posY + 'px',
+                        'width': SEAT_SIZE + 'px',
+                        'height': SEAT_SIZE + 'px',
+                        'display': 'flex',
+                        'align-items': 'center',
+                        'justify-content': 'center',
+                        'font-size': fontSize,
+                        'line-height': '1',
+                    });
                 
                 // Platform bazlı renklendirme
-                if (isSold) {
+                if (isDecorative) {
+                    seatEl.addClass('decorative');
+                    seatEl.attr('title', seat.sira + seat.numara + ' (Kayıt Dışı)');
+                } else if (isSold) {
                     if (platform === 'Bubilet') {
                         seatEl.addClass('bubilet');
                         seatEl.attr('title', 'Koltuk: ' + seatId + ' - Bubilet');
@@ -314,29 +483,31 @@
                     seatEl.attr('title', 'Koltuk: ' + seatId);
                 }
                 
-                if (!isSold) {
+                // Tıklama olayı
+                if (!isSold && !isDecorative) {
                     seatEl.click(function() {
                         var seatNo = $(this).attr('data-seat');
                         
                         if ($(this).hasClass('selected')) {
-                            // Seçimi kaldır
                             $(this).removeClass('selected').addClass('empty');
                             selectedSeats = selectedSeats.filter(s => s !== seatNo);
                         } else {
-                            // Seç
                             $(this).removeClass('empty').addClass('selected');
                             selectedSeats.push(seatNo);
                         }
                         
-                        // Textbox'ı güncelle
                         $('#selectedSeats').val(selectedSeats.join(', '));
                     });
                 }
                 
-                rowDiv.append(seatEl);
+                canvas.append(seatEl);
             });
 
-            seatingArea.append(rowDiv);
-        });
+        }
+
+    } catch (err) {
+        console.error("Seating render error:", err);
+        $('#seating-area').html('<div class="alert alert-danger m-3">Koltuk düzeni yüklenirken hata oluştu: ' + err.message + '</div>');
+    }
     });
 </script>

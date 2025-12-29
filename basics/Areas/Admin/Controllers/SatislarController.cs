@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace basics.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "AdminScheme", Roles = "Admin,Editor")]
     public class SatislarController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -23,12 +23,21 @@ namespace basics.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public IActionResult Index(int page = 1)
         {
-            // Etkinlikleri salon bilgisiyle çek
-            var etkinlikler = _context.Etkinlikler
+            const int pageSize = 12; // Kart görünümü olduğu için 12 (3x4 grid için)
+            
+            var query = _context.Etkinlikler
                 .Include(e => e.Salon)
-                .OrderByDescending(e => e.TarihSaat)
+                .OrderByDescending(e => e.TarihSaat);
+
+            int totalItems = query.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            // Etkinlikleri salon bilgisiyle çek
+            var etkinlikler = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
             
             // Şehir listesi
@@ -38,6 +47,8 @@ namespace basics.Areas.Admin.Controllers
                 .ToList();
             
             ViewBag.Sehirler = sehirler;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
             
             return View(etkinlikler);
         }
@@ -106,7 +117,7 @@ namespace basics.Areas.Admin.Controllers
                 koltuk.MusteriEmail = musteriEmail;
                 koltuk.OdemeYontemi = odemeYontemi;
                 koltuk.SatisTarihi = DateTime.Now;
-                koltuk.SatisYapanKullanici = "Admin"; // TODO: Login sistemi eklendikten sonra gerçek kullanıcı adı kullanılacak
+                koltuk.SatisYapanKullanici = User.Identity.Name ?? "Bilinmiyor";
                 koltuk.SatisPlatformu = satisPlatformu; // Archura, Bubilet, Biletinial
             }
 

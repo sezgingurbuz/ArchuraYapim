@@ -9,5 +9,8 @@ namespace basics.Areas.Admin.Models
         public string userName { get; set; }
         [Required]
         public string passwordHash { get; set; } //Saklı şifre
+        
+        [Required]
+        public string Role { get; set; } = "Admin"; // Varsayılan rol
     }
 }

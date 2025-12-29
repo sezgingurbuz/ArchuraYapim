@@ -1,0 +1,92 @@
+@using basics.Models
+@model List<BiletGrubu>
+@{
+    ViewData["Title"] = "Biletlerim";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="~/css/bilet-style.css" />
+
+<div class="biletlerim-page">
+    <div class="container py-4">
+        <div class="page-header">
+            <h1><i class="fas fa-ticket-alt"></i> Biletlerim</h1>
+            <p>Satın aldığınız tüm biletler burada listelenir.</p>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <span>@TempData["SuccessMessage"]</span>
+            </div>
+        }
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="tickets-grid">
+                @foreach (var grup in Model)
+                {
+                    var isPast = grup.Etkinlik?.TarihSaat < DateTime.Now;
+                    <div class="ticket-card @(isPast ? "past-event" : "")">
+                        <div class="ticket-header">
+                            <div class="event-name">@grup.Etkinlik?.EtkinlikAdi</div>
+                            @if (isPast)
+                            {
+                                <span class="badge badge-past">Geçmiş Etkinlik</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-upcoming">Yaklaşan</span>
+                            }
+                        </div>
+                        
+                        <div class="ticket-body">
+                            <div class="ticket-info">
+                                <div class="info-item">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>@grup.Etkinlik?.TarihSaat.ToString("dd MMMM yyyy, dddd")</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-clock"></i>
+                                    <span>@grup.Etkinlik?.TarihSaat.ToString("HH:mm")</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>@grup.Etkinlik?.Salon?.SalonAdi, @grup.Etkinlik?.Salon?.Sehir</span>
+                                </div>
+                            </div>
+
+                            <div class="ticket-seat">
+                                <div class="seat-label">@grup.BiletSayisi Koltuk</div>
+                                <div class="seat-numbers">@grup.Koltuklar</div>
+                            </div>
+                        </div>
+
+                        <div class="ticket-footer">
+                            <div class="purchase-date">
+                                <i class="fas fa-shopping-cart"></i>
+                                Satın Alındı: @grup.SatisTarihi?.ToString("dd.MM.yyyy HH:mm")
+                            </div>
+                            <div class="ticket-price">
+                                ₺@grup.ToplamFiyat.ToString("N2")
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="no-tickets">
+                <i class="fas fa-ticket-alt"></i>
+                <h3>Henüz biletiniz yok</h3>
+                <p>Etkinliklere göz atarak ilk biletinizi satın alabilirsiniz.</p>
+                <a asp-action="Index" class="btn-browse">
+                    <i class="fas fa-search"></i>
+                    Etkinliklere Göz At
+                </a>
+            </div>
+        }
+    </div>
+</div>

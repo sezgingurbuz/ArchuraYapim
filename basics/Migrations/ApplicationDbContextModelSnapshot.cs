@@ -25,6 +25,10 @@ namespace basics.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<string>("passwordHash")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -205,6 +209,27 @@ namespace basics.Migrations
                     b.ToTable("EtkinlikRaporlari");
                 });
 
+            modelBuilder.Entity("basics.Areas.Admin.Models.GalleryImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GalleryImages");
+                });
+
             modelBuilder.Entity("basics.Areas.Admin.Models.Salon", b =>
                 {
                     b.Property<int>("Id")
@@ -245,7 +270,7 @@ namespace basics.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2025, 12, 25, 11, 56, 34, 562, DateTimeKind.Utc).AddTicks(4218));
+                        .HasDefaultValue(new DateTime(2025, 12, 27, 11, 36, 9, 667, DateTimeKind.Utc).AddTicks(9360));
 
                     b.Property<string>("Durum")
                         .IsRequired()
@@ -270,11 +295,56 @@ namespace basics.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2025, 12, 25, 11, 56, 34, 562, DateTimeKind.Utc).AddTicks(4720));
+                        .HasDefaultValue(new DateTime(2025, 12, 27, 11, 36, 9, 667, DateTimeKind.Utc).AddTicks(9869));
 
                     b.HasKey("Id");
 
                     b.ToTable("SeatingPlans");
+                });
+
+            modelBuilder.Entity("basics.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("UTC_TIMESTAMP()");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("basics.Areas.Admin.Models.Etkinlik", b =>

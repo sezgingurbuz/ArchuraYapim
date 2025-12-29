@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using basics.Data;
@@ -12,6 +11,7 @@ namespace basics.Areas.Admin.Controllers
     public class LoginController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private const string AdminScheme = "AdminScheme";
 
         public LoginController(ApplicationDbContext context)
         {
@@ -20,10 +20,11 @@ namespace basics.Areas.Admin.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            // Kullanıcı zaten giriş yapmışsa tekrar login sayfasına girmesin
-            if (User.Identity!.IsAuthenticated)
+            // Admin oturumu açık mı kontrol et
+            var authResult = await HttpContext.AuthenticateAsync(AdminScheme);
+            if (authResult.Succeeded)
             {
                 return RedirectToAction("Index", "Admin", new { area = "Admin" });
             }
@@ -48,20 +49,21 @@ namespace basics.Areas.Admin.Controllers
                     var claims = new List<Claim>
                     {
                         new Claim(ClaimTypes.Name, admin.userName),
-                        new Claim(ClaimTypes.Role, "Admin"), 
+                        new Claim(ClaimTypes.Role, admin.userName.ToLower() == "admin" ? "Admin" : admin.Role),
                         new Claim("AdminId", admin.Id.ToString())
                     };
 
-                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    var claimsIdentity = new ClaimsIdentity(claims, AdminScheme);
                     
                     var authProperties = new AuthenticationProperties
                     {
-                        IsPersistent = true, // Beni hatırla
-                        ExpiresUtc = DateTime.UtcNow.AddMinutes(60) // Oturum süresi
+                        IsPersistent = true,
+                        ExpiresUtc = DateTime.UtcNow.AddHours(8)
                     };
 
+                    // AdminScheme ile giriş yap
                     await HttpContext.SignInAsync(
-                        CookieAuthenticationDefaults.AuthenticationScheme, 
+                        AdminScheme, 
                         new ClaimsPrincipal(claimsIdentity), 
                         authProperties);
 
@@ -69,18 +71,21 @@ namespace basics.Areas.Admin.Controllers
                 }
             }
 
-            // Eğer kod buraya düşerse; ya kullanıcı yoktur ya da şifre yanlıştır.
-            // Tek bir hata mesajı dönmek güvenlik açısından daha iyidir.
             ViewBag.Error = "Kullanıcı adı veya şifre hatalı!";
             return View();
         }
 
         public async Task<IActionResult> CikisYap()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignOutAsync(AdminScheme);
             return RedirectToAction("Index", "Login");
         }
 
-        
+        [HttpGet]
+        public IActionResult AccessDenied(string returnUrl = null)
+        {
+            ViewBag.ReturnUrl = returnUrl;
+            return View();
+        }
     }
 }

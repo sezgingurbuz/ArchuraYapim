@@ -1,0 +1,213 @@
+@{
+    ViewData["Title"] = "Kayıt Ol";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="~/css/login-style.css" />
+
+<div class="auth-page">
+    <div class="auth-container">
+        <!-- Üst Kısım - Tanıtım -->
+        <div class="auth-header">
+            <h1>Aramıza Katılın</h1>
+            <p>Archura Yapım ailesine katılarak etkinliklerden haberdar olun ve biletlerinizi kolayca yönetin.</p>
+            <div class="auth-features">
+                <div class="auth-feature">
+                    <i class="fas fa-bell"></i>
+                    <span>Etkinlik Bildirimleri</span>
+                </div>
+                <div class="auth-feature">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>Kolay Bilet Takibi</span>
+                </div>
+                <div class="auth-feature">
+                    <i class="fas fa-star"></i>
+                    <span>Özel Fırsatlar</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Bölümü -->
+        <div class="auth-form-card register-card">
+            <div class="form-header">
+                <h2>Hesap Oluştur</h2>
+                <p>Bilgilerinizi girerek hemen kayıt olun</p>
+            </div>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>@ViewBag.Error</span>
+                </div>
+            }
+
+            <form method="post" class="auth-form" id="registerForm">
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="firstName">
+                            <i class="fas fa-user"></i>
+                            Ad
+                        </label>
+                        <input type="text" 
+                               id="firstName" 
+                               name="firstName" 
+                               placeholder="Adınız" 
+                               required 
+                               autocomplete="given-name" />
+                    </div>
+
+                    <div class="form-group half">
+                        <label for="lastName">
+                            <i class="fas fa-user"></i>
+                            Soyad
+                        </label>
+                        <input type="text" 
+                               id="lastName" 
+                               name="lastName" 
+                               placeholder="Soyadınız" 
+                               required 
+                               autocomplete="family-name" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i>
+                        E-posta Adresi
+                    </label>
+                    <input type="email" 
+                           id="email" 
+                           name="email" 
+                           placeholder="ornek@email.com" 
+                           required 
+                           autocomplete="email" />
+                </div>
+
+                <div class="form-group">
+                    <label for="phoneNumber">
+                        <i class="fas fa-phone"></i>
+                        Telefon Numarası
+                    </label>
+                    <div class="phone-input-wrapper">
+                        <span class="country-code-label">TR +90</span>
+                        <input type="tel" 
+                               id="phoneNumber" 
+                               name="phoneNumber" 
+                               placeholder="5XX XXX XX XX" 
+                               required
+                               pattern="[0-9]{10}"
+                               maxlength="10"
+                               title="10 haneli telefon numarası girin"
+                               autocomplete="tel" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="password">
+                            <i class="fas fa-lock"></i>
+                            Şifre
+                        </label>
+                        <div class="password-wrapper">
+                            <input type="password" 
+                                   id="password" 
+                                   name="password" 
+                                   placeholder="En az 6 karakter" 
+                                   required 
+                                   minlength="6"
+                                   autocomplete="new-password" />
+                            <button type="button" class="toggle-password" data-target="password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group half">
+                        <label for="confirmPassword">
+                            <i class="fas fa-lock"></i>
+                            Şifre Tekrar
+                        </label>
+                        <div class="password-wrapper">
+                            <input type="password" 
+                                   id="confirmPassword" 
+                                   name="confirmPassword" 
+                                   placeholder="Şifrenizi tekrarlayın" 
+                                   required 
+                                   autocomplete="new-password" />
+                            <button type="button" class="toggle-password" data-target="confirmPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" name="agreeTerms" required />
+                        <span class="checkmark"></span>
+                        <a href="#" class="terms-link">Kullanım koşullarını</a> kabul ediyorum
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-auth-submit btn-register">
+                    <span>Kayıt Ol</span>
+                    <i class="fas fa-user-plus"></i>
+                </button>
+            </form>
+
+            <div class="form-divider">
+                <span>veya</span>
+            </div>
+
+            <div class="switch-form-section">
+                <p>Zaten hesabınız var mı?</p>
+                <a href="@Url.Action("Login", "Account")" class="btn-switch-form">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Giriş Yap</span>
+                </a>
+            </div>
+        </div>
+
+        <a href="@Url.Action("Index", "Home")" class="btn-back-home">
+            <i class="fas fa-home"></i>
+            <span>Ana Sayfaya Dön</span>
+        </a>
+    </div>
+</div>
+
+<script>
+    // Şifre göster/gizle
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+    });
+
+    // Şifre eşleşme kontrolü
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirmPassword');
+
+    function validatePassword() {
+        if (password.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity('Şifreler eşleşmiyor');
+        } else {
+            confirmPassword.setCustomValidity('');
+        }
+    }
+
+    password.addEventListener('change', validatePassword);
+    confirmPassword.addEventListener('keyup', validatePassword);
+
+    // Form animasyonu
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        const btn = this.querySelector('.btn-register');
+        btn.classList.add('loading');
+        btn.innerHTML = '<span>Kayıt yapılıyor...</span><i class="fas fa-spinner fa-spin"></i>';
+    });
+</script>

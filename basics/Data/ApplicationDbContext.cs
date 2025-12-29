@@ -16,6 +16,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<EtkinlikKoltuk> EtkinlikKoltuklari { get; set; }
     public DbSet<AdminUser> AdminUsers { get; set; }
     public DbSet<EtkinlikRapor> EtkinlikRaporlari { get; set; }
+    public DbSet<GalleryImage> GalleryImages { get; set; }
+    public DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,6 +38,17 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.userName).IsRequired().HasMaxLength(255);
             entity.Property(e => e.passwordHash).IsRequired();
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.Property(e => e.PasswordHash).IsRequired();
+            entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("UTC_TIMESTAMP()");
         });
     }
 }

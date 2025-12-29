@@ -176,30 +176,23 @@
 
     <!-- MEVCUT ETKİNLİKLER LİSTESİ -->
     <div class="card mt-5 shadow-sm border-0">
+        <!-- Server-side Filter Form -->
         <div class="filters-section mx-3 mt-3">
-            <div class="filters-header">
-                <h5 class="m-0 text-muted"><i class="fa-solid fa-filter me-2"></i>Filtrele ve Ara</h5>
-                <button class="btn-view" onclick="resetFilters()">Filtreleri Temizle</button>
-            </div>
-            <div class="filter-controls">
-                <div class="filter-group">
-                    <label>Etkinlik Ara</label>
-                    <input type="text" id="searchInput" placeholder="Etkinlik adı..." onkeyup="applyFilters()">
+            <form asp-action="Index" method="get" id="filterForm">
+                <div class="filters-header">
+                    <h5 class="m-0 text-muted"><i class="fa-solid fa-filter me-2"></i>Filtrele ve Ara</h5>
+                    <a href="@Url.Action("Index")" class="btn-view">Filtreleri Temizle</a>
                 </div>
-                <div class="filter-group">
-                    <label>Şehir Filtrele</label>
-                    <select id="cityFilter" onchange="applyFilters()">
-                        <option value="">Tümü</option>
-                        @if (Model.SehirlerListesi != null)
-                        {
-                            foreach (var item in Model.SehirlerListesi)
-                            {
-                                <option value="@item.Value">@item.Text</option>
-                            }
-                        }
-                    </select>
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <label>Etkinlik Ara</label>
+                        <input type="text" name="search" value="@ViewBag.SearchTerm" placeholder="Etkinlik veya Salon adı..." class="form-control">
+                    </div>
+                    <div class="filter-group d-flex align-items-end">
+                         <button type="submit" class="btn btn-primary w-100">Ara</button>
+                    </div>
                 </div>
-            </div>
+            </form>
         </div>
 
         <div class="card-header bg-white py-3 border-top">
@@ -271,13 +264,44 @@
                     {
                         <tr>
                             <td colspan="6" class="text-center py-4 text-muted">
-                                Henüz planlanmış bir etkinlik bulunmuyor.
+                                Henüz planlanmış bir etkinlik bulunmuyor veya arama sonucu boş.
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
+        
+        <!-- Pagination Controls -->
+        @if (ViewBag.TotalPages > 1)
+        {
+            <div class="card-footer bg-white d-flex justify-content-center py-3">
+                <nav>
+                    <ul class="pagination mb-0">
+                        @if (ViewBag.CurrentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1, search = ViewBag.SearchTerm })">Önceki</a>
+                            </li>
+                        }
+                        
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { page = i, search = ViewBag.SearchTerm })">@i</a>
+                            </li>
+                        }
+
+                        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1, search = ViewBag.SearchTerm })">Sonraki</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        }
     </div>
 
 </div>
@@ -318,7 +342,6 @@
                     type: 'GET',
                     data: { sehir: selectedCity },
                     success: function (data) {
-                        console.log('AJAX Success:', data);
                         salonSelect.empty().append('<option value="">Bir salon seçiniz...</option>');
                         
                         if (data.length === 0) {
@@ -340,57 +363,17 @@
             }
         });
 
-        // Form submit debug cleaned up
-        
         // Başarı mesajını 3 saniye sonra kaybet
         setTimeout(function() {
             $('.alert-success').fadeOut('slow');
         }, 3000);
     });
 
-    function applyFilters() {
-        var searchInput = document.getElementById("searchInput").value.toUpperCase();
-        var cityFilter = document.getElementById("cityFilter").value.toUpperCase();
-        var table = document.querySelector("table");
-        var tr = table.getElementsByTagName("tr");
-
-        for (var i = 1; i < tr.length; i++) {
-            var tdName = tr[i].getElementsByTagName("td")[0]; // Etkinlik Adı
-            // var tdType = tr[i].getElementsByTagName("td")[1]; // Tür (Artık kullanılmıyor filtrede)
-            var tdSalon = tr[i].getElementsByTagName("td")[2]; // Salon (Şehir)
-
-            if (tdName && tdSalon) {
-                var txtName = tdName.textContent || tdName.innerText;
-                var txtSalon = tdSalon.textContent || tdSalon.innerText;
-
-                var matchesSearch = txtName.toUpperCase().indexOf(searchInput) > -1;
-                // Salon bilgisinde şehir () içinde yazıyor, string içinde geçip geçmediğine bakmak yeterli
-                var matchesCity = cityFilter === "" || txtSalon.toUpperCase().indexOf(cityFilter) > -1;
-
-                if (matchesSearch && matchesCity) {
-                    tr[i].style.display = "";
-                } else {
-                    tr[i].style.display = "none";
-                }
-            }
-        }
-    }
-
-    function resetFilters() {
-        document.getElementById("searchInput").value = "";
-        document.getElementById("cityFilter").value = "";
-        selectedDateFilter = null; // Reset date filter
-        
-        // Remove selection style from calendar
-        $('.calendar-day').removeClass('selected');
-        
-        applyFilters();
-    }
-
-    // --- CALENDAR LOGIC ---
+    // --- CALENDAR LOGIC (Visual Only) ---
     var currentDate = new Date();
+    // Note: This only shows events on the CURRENT page in the calendar. 
+    // Ideally we should fetch ALL events for calendar via AJAX, but for now this is consistent with the view model.
     var eventDates = @Html.Raw(Json.Serialize(Model.MevcutEtkinlikler?.Select(e => e.TarihSaat.ToString("yyyy-MM-dd")).ToList() ?? new List<string>()));
-    var selectedDateFilter = null;
 
     function renderCalendar() {
         var year = currentDate.getFullYear();
@@ -421,24 +404,14 @@
             
             var dayEl = $('<div>')
                 .addClass('calendar-day')
-                .attr('data-date', dateStr)
-                .click(function() {
-                    // Toggle selection
-                    if ($(this).hasClass('selected')) {
-                        $(this).removeClass('selected');
-                        selectedDateFilter = null;
-                    } else {
-                        $('.calendar-day').removeClass('selected');
-                        $(this).addClass('selected');
-                        selectedDateFilter = $(this).attr('data-date');
-                    }
-                    applyFilters();
-                });
+                .attr('data-date', dateStr);
+             
+             // Removed click filter for calendar as it complexes with server-side pagination for now
 
             if (isToday) dayEl.addClass('today');
             if (hasEvent) {
                 dayEl.addClass('has-event');
-                dayEl.append('<div><span class="event-dot"></span></div>'); // Removed text 'Etkinlik' for smaller design
+                dayEl.append('<div><span class="event-dot"></span></div>'); 
             }
 
             dayEl.prepend('<span class="calendar-date">' + d + '</span>');
@@ -453,35 +426,5 @@
 
     // Initialize Calendar
     renderCalendar();
-
-    // Update applyFilters to include Date
-    // Override existing function
-    window.applyFilters = function() {
-        var searchInput = document.getElementById("searchInput").value.toUpperCase();
-        var cityFilter = document.getElementById("cityFilter").value.toUpperCase();
-        var table = document.querySelector("table");
-        var tr = table.getElementsByTagName("tr");
-
-        for (var i = 1; i < tr.length; i++) {
-            var tdName = tr[i].getElementsByTagName("td")[0];
-            var tdSalon = tr[i].getElementsByTagName("td")[2];
-            var rowDate = tr[i].getAttribute("data-date");
-
-            if (tdName && tdSalon) {
-                var txtName = tdName.textContent || tdName.innerText;
-                var txtSalon = tdSalon.textContent || tdSalon.innerText;
-
-                var matchesSearch = txtName.toUpperCase().indexOf(searchInput) > -1;
-                var matchesCity = cityFilter === "" || txtSalon.toUpperCase().indexOf(cityFilter) > -1;
-                var matchesDate = selectedDateFilter === null || rowDate === selectedDateFilter;
-
-                if (matchesSearch && matchesCity && matchesDate) {
-                    tr[i].style.display = "";
-                } else {
-                    tr[i].style.display = "none";
-                }
-            }
-        }
-    };
 
 </script>

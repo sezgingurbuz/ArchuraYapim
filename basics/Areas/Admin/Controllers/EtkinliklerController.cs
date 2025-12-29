@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace basics.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "AdminScheme", Roles = "Admin,Editor")]
     public class EtkinliklerController : Controller
     {
         private readonly ApplicationDbContext _dbContext;
@@ -21,8 +21,37 @@ namespace basics.Areas.Admin.Controllers
 
         // SAYFAYI GETİR (GET)
         [HttpGet]
-        public IActionResult Index()
+        public IActionResult Index(int page = 1, string search = "")
         {
+            const int pageSize = 10; // Sayfa başına 10 öğe
+            
+            var query = _dbContext.Etkinlikler
+                .Include(e => e.Salon)
+                .AsQueryable();
+
+            // Arama filtresi
+            if (!string.IsNullOrEmpty(search))
+            {
+                string s = search.ToLower();
+                query = query.Where(e => e.EtkinlikAdi.ToLower().Contains(s) || e.Salon.SalonAdi.ToLower().Contains(s));
+            }
+
+            // Toplam kayıt sayısı (Sayfalama için)
+            int totalItems = query.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            
+            // Sayfalama uygula
+            var etkinlikler = query
+                .OrderByDescending(e => e.TarihSaat)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // View'a gerekli verileri gönder
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.SearchTerm = search;
+
             var model = new EtkinlikEkleViewModel
             {
                 // Şehirleri Salonlar tablosundan çekiyoruz (Distinct: Tekrarsız)
@@ -34,11 +63,8 @@ namespace basics.Areas.Admin.Controllers
                 
                 Tarih = DateTime.Today,
                 
-                // Mevcut etkinlikleri getir (Salon bilgisiyle beraber)
-                MevcutEtkinlikler = _dbContext.Etkinlikler
-                    .Include(e => e.Salon)
-                    .OrderByDescending(e => e.TarihSaat)
-                    .ToList()
+                // Mevcut etkinlikleri getir (Paginated liste)
+                MevcutEtkinlikler = etkinlikler
             };
 
             return View(model);

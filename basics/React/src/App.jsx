@@ -85,11 +85,33 @@ const App = () => {
   const [startNumber, setStartNumber] = useState(1);
   const [startLetter, setStartLetter] = useState('A');
   const [direction, setDirection] = useState('symmetric');
+  const [isDecorativeMode, setIsDecorativeMode] = useState(false); // Kayıt dışı koltuk modu
+  const [rowOrder, setRowOrder] = useState('top-to-bottom'); // Satır harf yönü
 
   // Interactive state
   const [mode, setMode] = useState('block_add');
   const [pendingScroll, setPendingScroll] = useState({ scrollTop: 0, scrollLeft: 0, apply: false });
   const planAreaRef = useRef(null);
+
+  // Clipboard state (kopyala/yapıştır)
+  const [clipboard, setClipboard] = useState([]);
+
+  // Mouse position (yapıştırma için)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  // Mouse selection state
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectionBox, setSelectionBox] = useState(null);
+  const [selectionStart, setSelectionStart] = useState(null);
+
+  // Ctrl+Drag state (sürükleyerek taşıma)
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState(null);
+
+  // Rename modal state
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [renameData, setRenameData] = useState({ newBlok: '', newStartLetter: '' });
+  const [pastedSeats, setPastedSeats] = useState([]);
 
   // --- API Veri Çekme (ASP.NET Core API'den Kayıtlı Salonları Çekme) ---
 
@@ -147,6 +169,16 @@ const App = () => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
         e.preventDefault();
         handleDeselectAll();
+      }
+      // Kopyala (Ctrl+C)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+        e.preventDefault();
+        handleCopy();
+      }
+      // Yapıştır (Ctrl+V)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        e.preventDefault();
+        handlePaste();
       }
 
       const hasSelectedSeats = planData.koltuklar.some(s => s.isSelected);
@@ -244,10 +276,19 @@ const App = () => {
       startNumber: startNum,
       startLetter: startLetter,
       direction: direction,
+      rowOrder: rowOrder,
     };
 
     for (let r = 0; r < numRowsInt; r++) {
-      const siraHarfi = indexToLetter(startLtrIndex + r);
+      // Satır harf hesaplama (Row Order'a göre)
+      let letterIndex;
+      if (rowOrder === 'bottom-to-top') {
+        letterIndex = startLtrIndex + (numRowsInt - 1 - r);
+      } else {
+        letterIndex = startLtrIndex + r;
+      }
+
+      const siraHarfi = indexToLetter(letterIndex);
       for (let c = 0; c < seatCapacity; c++) {
         let seatX, seatY, seatNum;
 
@@ -282,7 +323,8 @@ const App = () => {
           numara: seatNum,
           x: seatX,
           y: seatY,
-          status: 'available'
+          status: 'available',
+          isDecorative: isDecorativeMode // Kayıt dışı koltuk flag'i
         });
       }
     }
@@ -447,6 +489,258 @@ const App = () => {
     setPlanData(prev => ({ ...prev, salonAdi: e.target.value }));
   };
 
+  // --- Kopyala/Yapıştır Fonksiyonları ---
+
+  const handleCopy = () => {
+    const selectedSeats = planData.koltuklar.filter(s => s.isSelected);
+    if (selectedSeats.length === 0) {
+      showNotification("Kopyalamak için koltuk seçin.");
+      return;
+    }
+
+    // Seçili koltukların göreceli pozisyonlarını hesapla
+    const minX = Math.min(...selectedSeats.map(s => s.x));
+    const minY = Math.min(...selectedSeats.map(s => s.y));
+
+    const copiedSeats = selectedSeats.map(s => ({
+      ...s,
+      relX: s.x - minX,
+      relY: s.y - minY
+    }));
+
+    setClipboard(copiedSeats);
+    showNotification(`${selectedSeats.length} koltuk kopyalandı. Ctrl+V ile yapıştırın.`);
+  };
+
+  const handlePaste = () => {
+    if (clipboard.length === 0) {
+      showNotification("Panoda kopyalanmış koltuk yok.");
+      return;
+    }
+
+    // Mouse'un bulunduğu konuma veya varsayılan konuma yapıştır
+    // mousePosition state'i mouseMove event'inden güncellenecek
+    const pasteX = mousePosition.x > 0 ? mousePosition.x :
+      (planData.koltuklar.length > 0 ? Math.max(...planData.koltuklar.map(s => s.x)) + SEAT_SIZE + SEAT_MARGIN * 3 : PLAN_OFFSET_X);
+
+    const pasteY = mousePosition.y > 0 ? mousePosition.y :
+      (planData.koltuklar.length > 0 ? Math.min(...planData.koltuklar.map(s => s.y)) : PLAN_OFFSET_Y);
+
+    // Yapıştır ve isim değiştirme modal'ını aç
+    const newSeats = clipboard.map(s => ({
+      ...s,
+      id: uuidv4(),
+      x: pasteX + s.relX,
+      y: pasteY + s.relY,
+      isSelected: true,
+      isPasted: true // Geçici işaret
+    }));
+
+    // Önce eski seçimleri kaldır
+    const updatedKoltuklar = planData.koltuklar.map(s => ({ ...s, isSelected: false }));
+
+    setPastedSeats(newSeats);
+    setRenameData({
+      newBlok: clipboard[0]?.blok || 'A',
+      newStartLetter: clipboard[0]?.sira || 'A'
+    });
+    setShowRenameModal(true);
+
+    // Geçici olarak koltukları ekle (seçili göster)
+    const tempPlan = {
+      ...planData,
+      koltuklar: [...updatedKoltuklar, ...newSeats]
+    };
+    setPlanData(tempPlan);
+
+    showNotification(`${newSeats.length} koltuk yapıştırıldı. Blok adını değiştirin.`);
+  };
+
+  const handleRenameConfirm = () => {
+    if (!renameData.newBlok || !renameData.newStartLetter) {
+      showNotification("Blok adı ve başlangıç satırı gerekli.");
+      return;
+    }
+
+    const startLetterIndex = renameData.newStartLetter.toUpperCase().charCodeAt(0) - 65;
+
+    // Yapıştırılan koltukların eski sıralarına göre yeni sıra harflerini hesapla
+    const oldRows = [...new Set(pastedSeats.map(s => s.sira))].sort();
+    const rowMapping = {};
+    oldRows.forEach((oldRow, index) => {
+      rowMapping[oldRow] = String.fromCharCode(65 + startLetterIndex + index);
+    });
+
+    // Koltukları yeniden adlandır
+    const renamedSeats = pastedSeats.map(s => ({
+      ...s,
+      blok: renameData.newBlok,
+      sira: rowMapping[s.sira] || s.sira,
+      isPasted: undefined
+    }));
+
+    // Koltuk listesini güncelle
+    const updatedKoltuklar = planData.koltuklar.filter(s => !s.isPasted);
+
+    // Blok listesini güncelle (Eğer blok yoksa ekle)
+    let updatedBloklar = [...planData.bloklar];
+    const existingBlock = updatedBloklar.find(b => b.blokAdi === renameData.newBlok);
+
+    // Yeni eklenen satır sayısını hesapla
+    const numberOfRows = Object.keys(rowMapping).length;
+
+    if (!existingBlock) {
+      // Yeni blok oluştur
+      // Not: Tam kapasite/başlangıç gibi veriler tahmini olacak, çünkü serbest yapıştırma
+      updatedBloklar.push({
+        blokAdi: renameData.newBlok,
+        startLetter: renameData.newStartLetter,
+        rows: numberOfRows,
+        capacityPerRow: Math.max(...renamedSeats.map(s => s.numara)), // En büyük numara tahmini kapasite
+        startX: Math.min(...renamedSeats.map(s => s.x)),
+        startY: Math.min(...renamedSeats.map(s => s.y)),
+        direction: 'custom' // Özel yapıştırma
+      });
+    } else {
+      // Mevcut bloğun satır sayısını güncelle (eğer gerekirse)
+      // Basitçe: mevcut rows ile yeni eklenen en son harfin indeksi karşılaştırılabilir
+      // Şimdilik existingBlock'u olduğu gibi bırakıyoruz, görsel olarak satırlar listesi koltuklara göre filtrelendiği için sorun olmaz
+      // Ancak rows sayısını güncellemek iyi olabilir
+    }
+
+    const newPlanData = {
+      ...planData,
+      koltuklar: [...updatedKoltuklar, ...renamedSeats],
+      bloklar: updatedBloklar
+    };
+
+    setPlanData(newPlanData);
+    updateHistory(newPlanData);
+    setShowRenameModal(false);
+    setPastedSeats([]);
+    setMode('move_seat');
+    showNotification(`Koltuklar "${renameData.newBlok}" bloğuna eklendi.`);
+  };
+
+  const handleRenameCancel = () => {
+    // Yapıştırılan koltukları kaldır
+    const updatedKoltuklar = planData.koltuklar.filter(s => !s.isPasted);
+    setPlanData(prev => ({ ...prev, koltuklar: updatedKoltuklar }));
+    setShowRenameModal(false);
+    setPastedSeats([]);
+    showNotification("Yapıştırma iptal edildi.");
+  };
+
+  // --- Mouse Seçimi Fonksiyonları ---
+
+  const handleMouseDown = (e) => {
+    if (mode !== 'move_seat') return;
+
+    // Mouse pozisyonunu al
+    const area = planAreaRef.current;
+    if (!area) return;
+    const rect = area.getBoundingClientRect();
+    const x = (e.clientX - rect.left + area.scrollLeft) / scale;
+    const y = (e.clientY - rect.top + area.scrollTop) / scale;
+
+    // Ctrl basılıysa ve seçim varsa sürükleme modunu başlat
+    const isControlPressed = e.ctrlKey || e.metaKey;
+    if (isControlPressed && planData.koltuklar.some(s => s.isSelected)) {
+      setIsDragging(true);
+      setDragStart({ x, y });
+      // Seçilmeyen diğer işlemlerden (örn. selection box) kaçın
+      e.stopPropagation();
+      e.preventDefault();
+      return;
+    }
+
+    if (e.target.closest('.seat')) return; // Koltuk üzerine tıklandıysa (ve sürükleme değilse) seçim kutusu açma
+
+    setIsSelecting(true);
+    setSelectionStart({ x, y });
+    setSelectionBox({ x, y, width: 0, height: 0 });
+  };
+
+  const handleMouseMove = (e) => {
+    const area = planAreaRef.current;
+    if (!area) return;
+
+    const rect = area.getBoundingClientRect();
+    const currentX = (e.clientX - rect.left + area.scrollLeft) / scale;
+    const currentY = (e.clientY - rect.top + area.scrollTop) / scale;
+
+    // Mouse pozisyonunu sürekli güncelle (yapıştırma için)
+    setMousePosition({ x: currentX, y: currentY });
+
+    // Sürükleme (Ctrl+Drag)
+    if (isDragging && dragStart) {
+      const dx = currentX - dragStart.x;
+      const dy = currentY - dragStart.y;
+
+      // Sürekli update yerine requestAnimationFrame veya throttle kullanılabilir ama şimdilik basit tutalım
+      setPlanData(prev => ({
+        ...prev,
+        koltuklar: prev.koltuklar.map(seat =>
+          seat.isSelected ? { ...seat, x: seat.x + dx, y: seat.y + dy } : seat
+        )
+      }));
+
+      setDragStart({ x: currentX, y: currentY });
+      return;
+    }
+
+    // Seçim Kutusu
+    if (!isSelecting || !selectionStart) return;
+
+    const boxX = Math.min(selectionStart.x, currentX);
+    const boxY = Math.min(selectionStart.y, currentY);
+    const boxWidth = Math.abs(currentX - selectionStart.x);
+    const boxHeight = Math.abs(currentY - selectionStart.y);
+
+    setSelectionBox({ x: boxX, y: boxY, width: boxWidth, height: boxHeight });
+  };
+
+  const handleMouseUp = () => {
+    // Sürüklemeyi bitir
+    if (isDragging) {
+      setIsDragging(false);
+      setDragStart(null);
+      // Canvas sınırlarını kontrol et
+      const { plan: normalized } = ensureCanvasFits(planData);
+      setPlanData(normalized);
+      updateHistory(normalized);
+      return;
+    }
+
+    if (!isSelecting || !selectionBox) {
+      setIsSelecting(false);
+      return;
+    }
+
+    // Seçim kutusunun içindeki koltukları seç
+    const { x, y, width, height } = selectionBox;
+
+    if (width > 5 && height > 5) { // Minimum seçim alanı
+      const updatedKoltuklar = planData.koltuklar.map(seat => {
+        const seatCenterX = seat.x + SEAT_SIZE / 2;
+        const seatCenterY = seat.y + SEAT_SIZE / 2;
+
+        const isInBox = seatCenterX >= x && seatCenterX <= x + width &&
+          seatCenterY >= y && seatCenterY <= y + height;
+
+        return isInBox ? { ...seat, isSelected: true } : seat;
+      });
+
+      const selectedCount = updatedKoltuklar.filter(s => s.isSelected).length;
+      setPlanData(prev => ({ ...prev, koltuklar: updatedKoltuklar }));
+      showNotification(`${selectedCount} koltuk seçildi.`);
+    }
+
+    setIsSelecting(false);
+    setSelectionBox(null);
+    setSelectionStart(null);
+  };
+
   const handleReset = () => {
     setPlanData(initialPlan);
     setPlanHistory([initialPlan]);
@@ -543,35 +837,67 @@ const App = () => {
 
   // --- UI/Rendering ---
 
-  const renderSeat = (seat) => (
-    <div
-      key={seat.id}
-      className={`absolute flex items-center justify-center rounded-md text-xs cursor-pointer select-none transition-colors duration-100 
-        ${seat.isSelected ? 'bg-yellow-500 border-yellow-700' : 'bg-blue-600 hover:bg-blue-500 border-blue-700'} 
-        ${seat.status === 'reserved' ? 'bg-red-500 border-red-700' : ''}
-        ${seat.blok.toLowerCase().startsWith('m') ? 'bg-gray-700 hover:bg-gray-600 border-gray-800' : ''}
-      `}
-      style={{
-        left: seat.x * scale,
-        top: seat.y * scale,
-        width: SEAT_SIZE * scale,
-        height: SEAT_SIZE * scale,
-        fontSize: `${0.65 * scale}rem`,
-        borderWidth: 2,
-        color: 'white',
-        boxShadow: seat.isSelected ? '0 0 5px rgba(255, 255, 0, 0.8)' : 'none',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        lineHeight: '1',
-        textAlign: 'center'
-      }}
-      onClick={() => handleSeatClick(seat.id)}
-      title={`${seat.blok} ${seat.sira}${seat.numara}`}
-    >
-      {seat.sira}{seat.numara}
-    </div>
-  );
+  const renderSeat = (seat) => {
+    // Kayıt dışı (dekoratif) koltuklar için özel stil
+    const isDecorative = seat.isDecorative === true;
+
+    const getSeatClasses = () => {
+      // Seçili ise sarı (dekoratif dahil)
+      if (seat.isSelected) {
+        return 'bg-yellow-500 border-yellow-700 cursor-pointer';
+      }
+      // Dekoratif koltuk - mor renk ama düzenleyicide tıklanabilir
+      if (isDecorative) {
+        return 'bg-purple-700 hover:bg-purple-600 border-purple-900 cursor-pointer';
+      }
+      if (seat.status === 'reserved') {
+        return 'bg-red-500 border-red-700 cursor-pointer';
+      }
+      if (seat.blok.toLowerCase().startsWith('m')) {
+        return 'bg-gray-700 hover:bg-gray-600 border-gray-800 cursor-pointer';
+      }
+      return 'bg-blue-600 hover:bg-blue-500 border-blue-700 cursor-pointer';
+    };
+
+    // Dinamik font boyutu hesaplama
+    const displayText = `${seat.sira}${seat.numara}`;
+    const textLength = displayText.length;
+    let fontSizeRem = 0.65;
+
+    // Metin uzunsa fontu küçült
+    if (textLength > 3) fontSizeRem = 0.55;
+    if (textLength > 4) fontSizeRem = 0.45;
+    if (textLength > 6) fontSizeRem = 0.35;
+
+    return (
+      <div
+        key={seat.id}
+        className={`absolute flex items-center justify-center rounded-md text-xs select-none transition-colors duration-100 ${getSeatClasses()}`}
+        style={{
+          left: seat.x * scale,
+          top: seat.y * scale,
+          width: SEAT_SIZE * scale,
+          height: SEAT_SIZE * scale,
+          fontSize: `${fontSizeRem * scale}rem`,
+          borderWidth: 2,
+          color: 'white',
+          boxShadow: seat.isSelected ? '0 0 5px rgba(255, 255, 0, 0.8)' : 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          lineHeight: '1.1',
+          textAlign: 'center',
+          overflow: 'hidden', // Taşan metni gizle
+          whiteSpace: 'nowrap', // Alt satıra geçme
+          padding: '1px'
+        }}
+        onClick={() => handleSeatClick(seat.id)}
+        title={isDecorative ? `${displayText} (Kayıt Dışı)` : `${seat.blok} ${displayText}`}
+      >
+        {displayText}
+      </div>
+    );
+  };
 
   // Compute canvas size
   const canvasExtent = planData.koltuklar.reduce((acc, s) => {
@@ -663,11 +989,44 @@ const App = () => {
               <option value="right">Sağdan Sola (...3, 2, 1)</option>
             </select>
 
+            <label className="block text-xs font-medium text-gray-400 mb-1 mt-2">Satır Harf Yönü</label>
+            <select
+              value={rowOrder}
+              onChange={(e) => setRowOrder(e.target.value)}
+              className="w-full p-2 rounded bg-gray-800 border border-gray-600 text-sm"
+            >
+              <option value="top-to-bottom">Yukarıdan Aşağıya (A, B, C...)</option>
+              <option value="bottom-to-top">Aşağıdan Yukarıya (..C, B, A)</option>
+            </select>
+
+            {/* Kayıt Dışı Koltuk Toggle */}
+            <div className="mt-4 mb-2">
+              <button
+                onClick={() => setIsDecorativeMode(!isDecorativeMode)}
+                className={`w-full p-2 rounded-lg font-semibold text-sm transition duration-150 flex items-center justify-center ${isDecorativeMode
+                  ? 'bg-purple-600 hover:bg-purple-700 border-2 border-purple-400'
+                  : 'bg-gray-600 hover:bg-gray-500 border border-gray-500'
+                  }`}
+              >
+                <i className={`fas ${isDecorativeMode ? 'fa-toggle-on' : 'fa-toggle-off'} mr-2`}></i>
+                Kayıt Dışı Koltuk
+              </button>
+              {isDecorativeMode && (
+                <p className="text-xs text-purple-300 mt-1 text-center">
+                  ⚠️ Eklenen koltuklar satışa dahil edilmeyecek
+                </p>
+              )}
+            </div>
+
             <button
               onClick={handleBlockAdd}
-              className="w-full mt-4 p-2 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition duration-150"
+              className={`w-full mt-2 p-2 rounded-lg font-semibold transition duration-150 ${isDecorativeMode
+                ? 'bg-purple-600 hover:bg-purple-700'
+                : 'bg-green-600 hover:bg-green-700'
+                }`}
             >
-              <i className="fas fa-cubes mr-2"></i> Blok Ekle
+              <i className={`fas ${isDecorativeMode ? 'fa-font' : 'fa-cubes'} mr-2`}></i>
+              {isDecorativeMode ? 'Dekoratif Blok Ekle' : 'Blok Ekle'}
             </button>
           </div>
         </div>
@@ -735,7 +1094,29 @@ const App = () => {
           ref={planAreaRef}
           className="flex-1 relative overflow-auto p-4 border-r border-gray-700"
           onClick={handlePlanAreaClick}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          style={{ cursor: mode === 'move_seat' ? 'crosshair' : 'default' }}
         >
+          {/* Seçim Kutusu */}
+          {isSelecting && selectionBox && (
+            <div
+              style={{
+                position: 'absolute',
+                left: selectionBox.x * scale,
+                top: selectionBox.y * scale,
+                width: selectionBox.width * scale,
+                height: selectionBox.height * scale,
+                border: '2px dashed #fbbf24',
+                backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                pointerEvents: 'none',
+                zIndex: 1000
+              }}
+            />
+          )}
+
           <div
             id="plan-canvas"
             ref={canvasRef}
@@ -854,38 +1235,40 @@ const App = () => {
           <div className="bg-gray-700 p-3 rounded-lg">
             <h3 className="text-sm font-semibold text-gray-400 mb-3 border-b border-gray-600 pb-2">Satırlar</h3>
             <div className="space-y-3">
-              {planData.bloklar.map((blok) => (
-                <div key={blok.blokAdi} className="bg-gray-800 p-2 rounded-lg">
-                  <p className="text-xs font-bold text-yellow-400 mb-2">{blok.blokAdi}</p>
-                  <div className="flex flex-wrap gap-1">
-                    {Array.from({ length: blok.rows }, (_, i) => {
-                      const startLtrIndex = blok.startLetter.toUpperCase().charCodeAt(0) - 65;
-                      const rowLetter = String.fromCharCode(65 + startLtrIndex + i);
-                      const rowSeats = planData.koltuklar.filter(
-                        s => s.blok === blok.blokAdi && s.sira === rowLetter
-                      );
+              {planData.bloklar
+                .filter(blok => planData.koltuklar.some(s => s.blok === blok.blokAdi)) // Sadece koltuğu olan blokları göster
+                .map((blok) => (
+                  <div key={blok.blokAdi} className="bg-gray-800 p-2 rounded-lg">
+                    <p className="text-xs font-bold text-yellow-400 mb-2">{blok.blokAdi}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {Array.from({ length: blok.rows }, (_, i) => {
+                        const startLtrIndex = blok.startLetter.toUpperCase().charCodeAt(0) - 65;
+                        const rowLetter = String.fromCharCode(65 + startLtrIndex + i);
+                        const rowSeats = planData.koltuklar.filter(
+                          s => s.blok === blok.blokAdi && s.sira === rowLetter
+                        );
 
-                      if (rowSeats.length === 0) return null;
+                        if (rowSeats.length === 0) return null;
 
-                      const allSelected = rowSeats.length > 0 && rowSeats.every(s => s.isSelected);
+                        const allSelected = rowSeats.length > 0 && rowSeats.every(s => s.isSelected);
 
-                      return (
-                        <button
-                          key={`${blok.blokAdi}${rowLetter}`}
-                          onClick={() => handleSelectRow(blok.blokAdi, rowLetter)}
-                          className={`px-2 py-1 text-xs font-semibold rounded transition ${allSelected
-                            ? 'bg-yellow-500 text-gray-900'
-                            : 'bg-gray-600 hover:bg-gray-500 text-white'
-                            }`}
-                          title={`${blok.blokAdi}${rowLetter} satırını seç/bırak`}
-                        >
-                          {rowLetter}
-                        </button>
-                      );
-                    })}
+                        return (
+                          <button
+                            key={`${blok.blokAdi}${rowLetter}`}
+                            onClick={() => handleSelectRow(blok.blokAdi, rowLetter)}
+                            className={`px-2 py-1 text-xs font-semibold rounded transition ${allSelected
+                              ? 'bg-yellow-500 text-gray-900'
+                              : 'bg-gray-600 hover:bg-gray-500 text-white'
+                              }`}
+                            title={`${blok.blokAdi}${rowLetter} satırını seç/bırak`}
+                          >
+                            {rowLetter}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         )}
@@ -905,9 +1288,89 @@ const App = () => {
             <p className="text-sm text-yellow-400 font-bold mt-1">
               Seçili: {planData.koltuklar.filter(s => s.isSelected).length} / {planData.koltuklar.length}
             </p>
+            {clipboard.length > 0 && (
+              <p className="text-xs text-green-400 mt-1">
+                Panoda: {clipboard.length} koltuk
+              </p>
+            )}
           </div>
         )}
+
+        {/* Kopyala/Yapıştır Butonları */}
+        <div className="bg-gray-700 p-3 rounded-lg mt-4">
+          <h3 className="text-sm font-semibold text-gray-400 mb-2 border-b border-gray-600 pb-2">Kopyala / Yapıştır</h3>
+          <div className="flex gap-2">
+            <button
+              onClick={handleCopy}
+              className="flex-1 p-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-xs font-semibold transition"
+              title="Seçili koltukları kopyala (Ctrl+C)"
+            >
+              <i className="fas fa-copy mr-1"></i> Kopyala
+            </button>
+            <button
+              onClick={handlePaste}
+              disabled={clipboard.length === 0}
+              className="flex-1 p-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-xs font-semibold transition"
+              title="Yapıştır (Ctrl+V)"
+            >
+              <i className="fas fa-paste mr-1"></i> Yapıştır
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Mouse ile sürükleyerek seçim yapın
+          </p>
+        </div>
       </div>
+
+      {/* İsim Değiştirme Modal'ı */}
+      {showRenameModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-xl p-6 w-96 shadow-2xl">
+            <h3 className="text-xl font-bold text-yellow-400 mb-4 border-b border-gray-600 pb-2">
+              <i className="fas fa-edit mr-2"></i>Yapıştırılan Koltukları Adlandır
+            </h3>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-400 mb-1">Yeni Blok Adı</label>
+              <input
+                type="text"
+                value={renameData.newBlok}
+                onChange={(e) => setRenameData(prev => ({ ...prev, newBlok: e.target.value.toUpperCase() }))}
+                className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                maxLength="3"
+                placeholder="Örn: B, M, BALKON"
+              />
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-400 mb-1">Başlangıç Satır Harfi</label>
+              <input
+                type="text"
+                value={renameData.newStartLetter}
+                onChange={(e) => setRenameData(prev => ({ ...prev, newStartLetter: e.target.value.toUpperCase() }))}
+                className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                maxLength="1"
+                placeholder="Örn: A"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleRenameCancel}
+                className="flex-1 p-3 bg-gray-600 hover:bg-gray-500 rounded-lg font-semibold transition"
+              >
+                <i className="fas fa-times mr-2"></i>İptal
+              </button>
+              <button
+                onClick={handleRenameConfirm}
+                className="flex-1 p-3 bg-yellow-600 hover:bg-yellow-700 rounded-lg font-semibold transition"
+              >
+                <i className="fas fa-check mr-2"></i>Onayla
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

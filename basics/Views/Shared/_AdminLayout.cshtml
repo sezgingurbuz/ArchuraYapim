@@ -118,9 +118,12 @@
             <i class="fa-solid fa-gauge-high"></i> Dashboard
         </a>
         
-        <a asp-area="Admin" asp-controller="Salon" asp-action="Index">
-            <i class="fa-solid fa-couch"></i> Salon Yönetimi
-        </a>
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-area="Admin" asp-controller="Salon" asp-action="Index">
+                <i class="fa-solid fa-couch"></i> Salon Yönetimi
+            </a>
+        }
         
         <a asp-area="Admin" asp-controller="Etkinlikler" asp-action="Index">
             <i class="fa-solid fa-masks-theater"></i> Etkinlikler
@@ -130,12 +133,22 @@
             <i class="fa-solid fa-money-bill-trend-up"></i> Satışlar
         </a>
         
-        <a asp-area="Admin" asp-controller="Admin" asp-action="Users">
-            <i class="fa-solid fa-users"></i> Kullanıcılar
-        </a>
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-area="Admin" asp-controller="Admin" asp-action="Users">
+                <i class="fa-solid fa-users"></i> Kullanıcılar
+            </a>
+        }
         
-        <a asp-area="Admin" asp-controller="Rapor" asp-action="Index">
-            <i class="fa-solid fa-chart-line"></i> Raporlar
+        @if (User.IsInRole("Admin") || User.IsInRole("Okan"))
+        {
+            <a asp-area="Admin" asp-controller="Rapor" asp-action="Index">
+                <i class="fa-solid fa-chart-line"></i> Raporlar
+            </a>
+        }
+        
+        <a asp-area="Admin" asp-controller="Galleri" asp-action="Index">
+            <i class="fa-solid fa-images"></i> Galeri
         </a>
         
         <hr style="border-color: #555;">

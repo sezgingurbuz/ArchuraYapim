@@ -1,0 +1,62 @@
+@model List<basics.Areas.Admin.Models.GalleryImage>
+@{
+    ViewData["Title"] = "Galeri";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="~/css/galeri-style.css"/>
+
+<div class="gallery-page">
+    <div class="gallery-header">
+        <h1>Archura Yapım Olarak Buradaydık!</h1>
+        <p>Sahne arkası anları ve unutulmaz kareler</p>
+    </div>
+
+    <div class="gallery-grid">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var image in Model)
+            {
+                <div class="gallery-item" onclick="openLightbox('@image.ImagePath', '@image.Title')">
+                    <img src="@image.ImagePath" alt="@image.Title" loading="lazy" />
+                    @if (!string.IsNullOrEmpty(image.Title))
+                    {
+                        <div class="gallery-caption">@image.Title</div>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <div class="no-images">
+                <i class="bi bi-images"></i>
+                <p>Galeri fotoğrafları yakında eklenecek.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Lightbox Modal -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <span class="lightbox-close">&times;</span>
+    <img src="" alt="" id="lightbox-img" />
+    <div class="lightbox-caption" id="lightbox-caption"></div>
+</div>
+
+<script>
+    function openLightbox(src, title) {
+        document.getElementById('lightbox-img').src = src;
+        document.getElementById('lightbox-caption').textContent = title || '';
+        document.getElementById('lightbox').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeLightbox();
+    });
+</script>

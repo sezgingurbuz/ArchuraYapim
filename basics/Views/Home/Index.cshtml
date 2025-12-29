@@ -1,31 +1,81 @@
-﻿@{
+﻿@using basics.Areas.Admin.Models
+@model List<Etkinlik>
+@{
     ViewData["Title"] = "Home Page";
     Layout = "_Layout";
 }
 
 <head>
-    <link rel="stylesheet" href="~/css/photo-style.css"/>
+    <link rel="stylesheet" href="~/css/index-style.css"/>
 </head>
+
 <div class="hero">
     <div class="hero-content">
-        <h1>Hoşgeldiniz!</h1>
-        <p>Bu bir tam ekran hero alanıdır</p>
-        <button onclick="scrollToServices()">Başla</button>
+        <div class="hero-text">
+            <h1>Genç Werther'in Acıları</h1>
+            <p>Aşk, insanı yaşatır mı yoksa tüketir mi?
+Goethe'nin başyapıtı, Alman edebiyatının "Sturm und Drang" (Fırtına ve Coşku) döneminin en önemli eseri Genç Werther'in Acıları, bu sezon Archura Yapım sahnelerinde!</p>
+            <div class="info-section">
+                <p><strong>Süre:</strong> 01:25:00</p>
+                <p><strong>Perde:</strong> 1</p>
+            </div>
+            <button onclick="scrollToEvents()">Bilet Al</button>
+        </div>
+        <div class="hero-image">
+            <img src="~/img/Home/afis-design.png" alt="Genc-werther-afis" />
+        </div>
     </div>
 </div>
- <!-- Alt İçerik-->
-  <div class="section">
-    <h2>Hakkımızda</h2>
-    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aperiam quidem at quae molestiae impedit eaque. Harum, rem ut dolorem minus consequatur maiores nihil doloremque, odio fugiat provident veritatis eligendi sunt magnam, ab culpa praesentium ratione ducimus? Harum hic quae corporis dolorum, enim doloribus ipsa earum amet, maiores ut corrupti deserunt.</p>
-  </div>
-  <div class="section" id="services">
-    <h2>Hizmetlerimiz</h2>
-    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae voluptatem facilis cumque neque ratione beatae!</p>
-  </div>
+
+<!-- Etkinlikler Carousel -->
+<div class="section" id="events">
+    <h2>Etkinliklerimiz</h2>
+    <div class="events-carousel">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var etkinlik in Model)
+            {
+                <div class="event-card">
+                    <div class="event-card-header">
+                        <h3 class="event-title">@etkinlik.EtkinlikAdi</h3>
+                    </div>
+                    <div class="event-card-body">
+                        <div class="event-datetime">
+                            <span class="event-date"><i class="bi bi-calendar3"></i> @etkinlik.TarihSaat.ToString("dd MMMM yyyy")</span>
+                            <span class="event-time"><i class="bi bi-clock"></i> @etkinlik.TarihSaat.ToString("HH:mm")</span>
+                        </div>
+                        <p class="event-venue">
+                            <i class="bi bi-geo-alt-fill"></i> 
+                            @etkinlik.Salon?.SalonAdi
+                        </p>
+                        <p class="event-city">
+                            <i class="bi bi-building"></i> 
+                            @etkinlik.Salon?.Sehir
+                        </p>
+                    </div>
+                     <div class="event-card-footer">
+                        @if (etkinlik.SatisAktifMi)
+                        {
+                            <a asp-controller="Tickets" asp-action="BiletAl" asp-route-id="@etkinlik.Id" class="btn-ticket">Bilet Al</a>
+                        }
+                        else
+                        {
+                            <p class="not-on-sale-warning">Bu etkinlik henüz satışa açılmamıştır.</p>
+                            <button type="button" class="btn-ticket btn-disabled" disabled>Bilet Al</button>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="no-events">Şu anda aktif etkinlik bulunmamaktadır.</p>
+        }
+    </div>
+</div>
 
 <script>
-    function scrollToServices() {
-        document.getElementById('services').scrollIntoView({ behavior: 'smooth' });
+    function scrollToEvents() {
+        document.getElementById('events').scrollIntoView({ behavior: 'smooth' });
     }
 </script>
-

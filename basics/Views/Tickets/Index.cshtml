@@ -1,0 +1,84 @@
+@using basics.Areas.Admin.Models
+@model List<Etkinlik>
+@{
+    ViewData["Title"] = "Etkinlikler";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="~/css/etkinlikler-style.css"/>
+
+<div class="events-page">
+    <div class="events-header">
+        <p>Tüm etkinliklerimizi keşfedin ve biletinizi hemen alın!</p>
+    </div>
+
+    <!-- Şehir Filtresi -->
+    <div class="filter-section">
+        <form asp-action="Index" method="get" class="city-filter-form">
+            <label for="sehir">Şehire Göre Filtrele:</label>
+            <select name="sehir" id="sehir" onchange="this.form.submit()">
+                <option value="">Tüm Şehirler</option>
+                @if (ViewBag.Sehirler != null)
+                {
+                    @foreach (var sehir in ViewBag.Sehirler as List<string>)
+                    {
+                        <option value="@sehir" selected="@(ViewBag.SecilenSehir == sehir ? "selected" : null)">@sehir</option>
+                    }
+                }
+            </select>
+        </form>
+    </div>
+
+    <!-- Etkinlik Kartları -->
+    <div class="events-grid">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var etkinlik in Model)
+            {
+                <div class="event-card">
+                    <div class="event-card-header">
+                        <h3 class="event-title">@etkinlik.EtkinlikAdi</h3>
+                    </div>
+                    <div class="event-card-body">
+                        <div class="event-datetime">
+                            <span class="event-date"><i class="bi bi-calendar3"></i> @etkinlik.TarihSaat.ToString("dd MMMM yyyy")</span>
+                            <span class="event-time"><i class="bi bi-clock"></i> @etkinlik.TarihSaat.ToString("HH:mm")</span>
+                        </div>
+                        <p class="event-venue">
+                            <i class="bi bi-geo-alt-fill"></i> 
+                            @etkinlik.Salon?.SalonAdi
+                        </p>
+                        <p class="event-city">
+                            <i class="bi bi-building"></i> 
+                            @etkinlik.Salon?.Sehir
+                        </p>
+                    </div>
+                    <div class="event-card-footer">
+                        @if (etkinlik.SatisAktifMi)
+                        {
+                            <a asp-action="BiletAl" asp-route-id="@etkinlik.Id" class="btn-ticket">Bilet Al</a>
+                        }
+                        else
+                        {
+                            <p class="not-on-sale-warning">Bu etkinlik henüz satışa açılmamıştır.</p>
+                            <button type="button" class="btn-ticket btn-disabled" disabled>Bilet Al</button>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="no-events-message">
+                <i class="bi bi-calendar-x"></i>
+                <p>Şu anda gösterilecek etkinlik bulunmamaktadır.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function showNotSaleAlert() {
+        alert('Bu etkinlik henüz satışa açılmamıştır. Beklemede kalınız.');
+    }
+</script>
