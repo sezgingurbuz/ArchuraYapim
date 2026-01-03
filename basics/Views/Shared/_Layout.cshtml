@@ -4,6 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - basics</title>
+    
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="~/ico/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="~/ico/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="~/ico/favicon-16x16.png">
+    <link rel="manifest" href="~/ico/site.webmanifest">
+    <link rel="shortcut icon" href="~/ico/favicon.ico">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/basics.styles.css" asp-append-version="true" />
@@ -238,7 +245,7 @@
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end user-dropdown-menu" aria-labelledby="userDropdown">
                                 <li><a class="dropdown-item" asp-controller="Tickets" asp-action="Biletlerim"><i class="fas fa-ticket-alt"></i> Biletlerim</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profilim</a></li>
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="fas fa-user"></i> Profilim</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</a></li>
                             </ul>
@@ -269,6 +276,17 @@
                 <div class="footer-logo">
                     <img src="/img/home/logo-yatay-yeni.png" alt="Archura Yapım Logo" id="footer-logo" />
                 </div>
+            </div>
+            <div class="footer-center">
+                <h4>Kurumsal</h4>
+                <a href="@Url.Action("About", "Home")" class="footer-link">Hakkımızda</a>
+                <a href="@Url.Action("Iletisim", "Pages")" class="footer-link">İletişim</a>
+                <a href="@Url.Action("Kvkk", "Pages")" class="footer-link">KVKK</a>
+            </div>
+            <div class="footer-center">
+                <h4>Yardım</h4>
+                <a href="@Url.Action("KullanimSartlari", "Pages")" class="footer-link">Kullanım Şartları</a>
+                <a href="@Url.Action("IadeIptal", "Pages")" class="footer-link">İade ve İptal</a>
             </div>
             <div class="footer-right">
                 <h4>İletişim</h4>

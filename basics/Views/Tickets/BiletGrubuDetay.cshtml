@@ -1,0 +1,279 @@
+@model List<basics.Controllers.BiletQrViewModel>
+@{
+    ViewData["Title"] = "Biletlerim";
+    Layout = "_Layout";
+    var firstBilet = Model.FirstOrDefault()?.Bilet;
+    var etkinlik = firstBilet?.Etkinlik;
+}
+
+<link rel="stylesheet" href="~/css/legal-style.css" />
+
+<style>
+    .bilet-page {
+        min-height: calc(100vh - 180px);
+        background: var(--bg-color);
+        padding: 40px 20px;
+    }
+
+    .bilet-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .bilet-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .bilet-header h1 {
+        font-family: "Special Elite", system-ui;
+        font-size: 2rem;
+        color: #c8af8b;
+        margin-bottom: 10px;
+    }
+
+    .bilet-header p {
+        color: var(--text-color);
+        opacity: 0.8;
+    }
+
+    .etkinlik-info {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .etkinlik-info h2 {
+        color: #c8af8b;
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+    }
+
+    .etkinlik-info .info-row {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        flex-wrap: wrap;
+        color: var(--text-color);
+    }
+
+    .etkinlik-info .info-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .etkinlik-info .info-item i {
+        color: #c8af8b;
+    }
+
+    .biletler-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+    }
+
+    .bilet-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        overflow: hidden;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .bilet-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .bilet-card-header {
+        background: linear-gradient(135deg, #c8af8b, #a89068);
+        color: white;
+        padding: 15px;
+    }
+
+    .bilet-card-header h3 {
+        font-size: 1.3rem;
+        margin: 0;
+    }
+
+    .qr-container {
+        padding: 25px;
+        background: white;
+    }
+
+    .qr-container img {
+        max-width: 200px;
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .bilet-card-body {
+        padding: 20px;
+        color: var(--text-color);
+    }
+
+    .bilet-card-body p {
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .bilet-card-body strong {
+        color: #c8af8b;
+    }
+
+    .giris-badge {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-top: 10px;
+    }
+
+    .giris-badge.bekliyor {
+        background: #27ae60;
+        color: white;
+    }
+
+    .giris-badge.yapildi {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 30px;
+        padding: 12px 24px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--text-color);
+        text-decoration: none;
+        border: 2px solid var(--border-color);
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        border-color: #c8af8b;
+        color: #c8af8b;
+    }
+
+    .print-info {
+        background: rgba(200, 175, 139, 0.1);
+        border: 1px solid rgba(200, 175, 139, 0.3);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 25px;
+        text-align: center;
+        color: var(--text-color);
+    }
+
+    .print-info i {
+        color: #c8af8b;
+        margin-right: 8px;
+    }
+
+    @@media print {
+        .bilet-header, .btn-back, .print-info {
+            display: none;
+        }
+        
+        .bilet-page {
+            padding: 10px;
+        }
+        
+        .bilet-card {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+    }
+</style>
+
+<div class="bilet-page">
+    <div class="bilet-container">
+        <div class="bilet-header">
+            <h1>🎫 Biletleriniz</h1>
+            <p>@Model.Count bilet gösteriliyor</p>
+        </div>
+
+        @if (etkinlik != null)
+        {
+            <div class="etkinlik-info">
+                <h2>@etkinlik.EtkinlikAdi</h2>
+                <div class="info-row">
+                    <span class="info-item">
+                        <i class="fas fa-calendar"></i>
+                        @etkinlik.TarihSaat.ToString("dd MMMM yyyy, dddd", new System.Globalization.CultureInfo("tr-TR"))
+                    </span>
+                    <span class="info-item">
+                        <i class="fas fa-clock"></i>
+                        @etkinlik.TarihSaat.ToString("HH:mm")
+                    </span>
+                    @if (etkinlik.Salon != null)
+                    {
+                        <span class="info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            @etkinlik.Salon.SalonAdi - @etkinlik.Salon.Sehir
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="print-info">
+            <i class="fas fa-print"></i>
+            QR kodlarınızı yazdırabilir veya telefonunuzdan gösterebilirsiniz.
+        </div>
+
+        <div class="biletler-grid">
+            @foreach (var item in Model)
+            {
+                <div class="bilet-card">
+                    <div class="bilet-card-header">
+                        <h3>Koltuk: @item.Bilet.KoltukNo</h3>
+                    </div>
+                    <div class="qr-container">
+                        <img src="@item.QrCodeDataUri" alt="QR Kod - @item.Bilet.KoltukNo" />
+                    </div>
+                    <div class="bilet-card-body">
+                        <p><strong>Bilet No:</strong> @item.Bilet.Id</p>
+                        <p><strong>Müşteri:</strong> @item.Bilet.MusteriAdi @item.Bilet.MusteriSoyadi</p>
+                        <p><strong>Fiyat:</strong> @item.Bilet.Fiyat.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</p>
+                        
+                        @if (item.Bilet.GirisYapildiMi)
+                        {
+                            <span class="giris-badge yapildi">
+                                <i class="fas fa-check-circle"></i> Giriş Yapıldı
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="giris-badge bekliyor">
+                                <i class="fas fa-clock"></i> Giriş Bekliyor
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="text-center">
+            <a href="@Url.Action("Biletlerim", "Tickets")" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                <span>Biletlerime Dön</span>
+            </a>
+            <button onclick="window.print()" class="btn-back" style="margin-left: 10px;">
+                <i class="fas fa-print"></i>
+                <span>Yazdır</span>
+            </button>
+        </div>
+    </div>
+</div>

@@ -30,6 +30,11 @@ namespace basics.Models
 
         public bool IsActive { get; set; } = true;
 
+        [StringLength(100)]
+        public string? City { get; set; }
+
+        public DateTime? BirthDate { get; set; }
+
         // Tam ad için helper property
         public string FullName => $"{FirstName} {LastName}";
     }

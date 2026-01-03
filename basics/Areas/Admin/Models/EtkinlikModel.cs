@@ -21,7 +21,12 @@ namespace basics.Areas.Admin.Models
         [Required]
         public string Tur { get; set; } // Tiyatro, Müzikal vb.
 
+        // Satış Tipi: "Koltuk" veya "Kategori"
+        [Required]
+        public string SatisTipi { get; set; } = "Koltuk";
 
+        // Kategoriler (Navigation Property) - Kategori satışı için
+        public ICollection<EtkinlikKategori>? Kategoriler { get; set; }
 
         // Bu etkinlik oluşturulduğunda biletler satışa açıldı mı?
         public bool SatisAktifMi { get; set; } = false;

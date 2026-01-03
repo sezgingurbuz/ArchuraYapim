@@ -1,0 +1,106 @@
+@{
+    ViewData["Title"] = "İletişim";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="~/css/legal-style.css" />
+
+<div class="legal-page">
+    <div class="legal-container">
+        <div class="legal-header">
+            <h1>İletişim</h1>
+            <p>Bizimle iletişime geçmekten çekinmeyin</p>
+        </div>
+
+        <div class="legal-content">
+            <div class="contact-grid">
+                <div class="contact-card">
+                    <i class="fas fa-envelope"></i>
+                    <h3>E-posta</h3>
+                    <p>
+                        <a href="mailto:archurayapim@gmail.com">archurayapim@gmail.com</a>
+                    </p>
+                </div>
+
+                <div class="contact-card">
+                    <i class="fas fa-phone"></i>
+                    <h3>Telefon</h3>
+                    <p>
+                        <a href="tel:+905XXXXXXXXX">+90 539 585 58 58</a>
+                    </p>
+                </div>
+
+                <div class="contact-card">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h3>Adres</h3>
+                    <p>İstanbul, Türkiye</p>
+                </div>
+            </div>
+
+            <h2><i class="fas fa-share-alt"></i> Sosyal Medya</h2>
+            <p>Bizi sosyal medyada takip edin, etkinliklerden ve kampanyalardan haberdar olun!</p>
+            
+            <div class="social-links">
+                <a href="https://www.instagram.com/archurayapim/" target="_blank" class="social-link" title="Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+            </div>
+
+            <h2><i class="fas fa-building"></i> Şirket Bilgileri</h2>
+            <div class="info-box">
+                <p>
+                    <strong>Vergi Dairesi:</strong> SEYHAN VERGI DAIRESI MÜD.<br>
+                    <strong>Vergi No:</strong> 2771103693
+                </p>
+            </div>
+
+            <h2><i class="fas fa-question-circle"></i> Sıkça Sorulan Sorular</h2>
+            
+            <h3>Biletimi nasıl alabilirim?</h3>
+            <p>
+                Biletiniz, satın alma işleminin ardından kayıtlı e-posta adresinize gönderilir. 
+                Ayrıca hesabınıza giriş yaparak "Biletlerim" bölümünden biletlerinize ulaşabilirsiniz.
+            </p>
+
+            <h3>Ödeme yöntemleri nelerdir?</h3>
+            <p>
+                Kredi kartı ve banka kartı ile güvenli ödeme yapabilirsiniz. 
+                Tüm ödemeler iyzico güvenli altyapısı üzerinden gerçekleştirilir.
+            </p>
+
+            <h3>Biletimi iade edebilir miyim?</h3>
+            <p>
+                İade koşulları hakkında detaylı bilgi için 
+                <a href="@Url.Action("IadeIptal", "Pages")">İade ve İptal Koşulları</a> sayfamızı inceleyebilirsiniz.
+            </p>
+
+            <h3>Etkinliğe girerken ne göstermem gerekiyor?</h3>
+            <p>
+                E-biletinizi (barkodlu) telefonunuzdan veya çıktı olarak gösterebilirsiniz. 
+                Kimlik kontrolü yapılabilir, bu nedenle yanınızda kimlik bulundurmanızı öneririz.
+            </p>
+
+            <h2><i class="fas fa-comment-alt"></i> Bize Yazın</h2>
+            <p>
+                Sorularınız, önerileriniz veya şikayetleriniz için aşağıdaki e-posta adresinden bize ulaşabilirsiniz. 
+                En kısa sürede size dönüş yapacağız.
+            </p>
+
+            <div class="info-box success">
+                <h4><i class="fas fa-paper-plane"></i> Hızlı İletişim</h4>
+                <p>
+                    <a href="mailto:archurayapim@gmail.com?subject=Müşteri%20Destek%20Talebi">
+                        archurayapim@gmail.com adresine e-posta gönderin →
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="@Url.Action("Index", "Home")" class="btn-back-home">
+                <i class="fas fa-arrow-left"></i>
+                <span>Ana Sayfaya Dön</span>
+            </a>
+        </div>
+    </div>
+</div>

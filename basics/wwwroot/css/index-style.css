@@ -538,11 +538,17 @@ html {
     color: #fdb414 !important;
 }
 
+.footer-center h4,
 .footer-right h4 {
     color: #fdb414;
     font-size: 1.2rem;
     margin-bottom: 15px;
     font-weight: 600;
+}
+
+.footer-center {
+    display: flex;
+    flex-direction: column;
 }
 
 .footer-link {

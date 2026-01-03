@@ -1,0 +1,283 @@
+@{
+    ViewData["Title"] = "Ödeme Yap";
+    Layout = "_Layout";
+    var etkinlik = ViewBag.Etkinlik as basics.Areas.Admin.Models.Etkinlik;
+    var koltuklar = ViewBag.Koltuklar as List<string>;
+    var toplamFiyat = (decimal)ViewBag.ToplamFiyat;
+    var biletFiyati = (decimal)ViewBag.BiletFiyati;
+}
+
+<link rel="stylesheet" href="~/css/bilet-style.css?v=2" />
+
+<div class="odeme-page">
+    <!-- Header -->
+    <div class="odeme-header">
+        <a asp-action="BiletAl" asp-route-id="@etkinlik?.Id" class="btn-back-small">
+            <i class="fas fa-arrow-left"></i>
+            <span>Koltuk Seçimine Dön</span>
+        </a>
+        <div class="header-title">
+            <i class="fas fa-credit-card"></i>
+            <h1>Ödeme</h1>
+        </div>
+        <div class="secure-badge">
+            <i class="fas fa-lock"></i>
+            <span>Güvenli Ödeme</span>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>@TempData["ErrorMessage"]</span>
+        </div>
+    }
+
+    <div class="odeme-content">
+        <!-- Sol: Form Alanları -->
+        <!-- Sol: Form Alanları -->
+        <div class="odeme-form-section">
+            <!-- BAKIM MODU UYARISI -->
+            <div class="card border-0 shadow-sm text-center p-4 mb-4 bg-white">
+                <div class="card-body">
+                    <div class="mb-3 text-warning">
+                        <i class="fas fa-tools fa-3x"></i>
+                    </div>
+                    <h3 class="mb-3">Online Bilet Satışı Çok Yakında!</h3>
+                    <p class="text-muted mb-4">
+                        Ödeme altyapımızdaki entegrasyon çalışmaları nedeniyle şu an için web sitemizden online satış yapılamamaktadır.
+                    </p>
+                    
+                    <div class="alert alert-info text-start mb-4 border-0 bg-light">
+                        <div class="d-flex">
+                            <div class="me-3 mt-1">
+                                <i class="fas fa-info-circle fa-lg text-primary"></i>
+                            </div>
+                            <div>
+                                Bilet işlemleri ve rezervasyon için lütfen 
+                                <strong class="text-dark">0539 585 5858</strong> numaralı telefondan bize ulaşınız veya etkinlik günü gişemizi ziyaret ediniz.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                        <a href="/" class="btn btn-outline-primary px-4 py-2">
+                            <i class="fas fa-home me-2"></i>Ana Sayfaya Dön
+                        </a>
+                        <a href="https://wa.me/905395855858" class="btn btn-success px-4 py-2" target="_blank">
+                            <i class="fab fa-whatsapp me-2"></i>WhatsApp'tan Rezervasyon
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            @if (false) {
+            <form asp-action="OdemeYap" method="post" id="paymentForm">
+                <input type="hidden" name="etkinlikId" value="@etkinlik?.Id" />
+                <input type="hidden" name="koltuklar" value="@string.Join(",", koltuklar ?? new List<string>())" />
+                <input type="hidden" name="fiyat" value="@toplamFiyat" />
+
+                <!-- Müşteri Bilgileri -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <i class="fas fa-user"></i>
+                        <h2>Müşteri Bilgileri</h2>
+                    </div>
+                    <div class="form-card-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Ad <span class="required">*</span></label>
+                                <input type="text" name="musteriAdi" class="form-input"
+                                       value="@ViewBag.KullaniciAdi" placeholder="Adınız" required />
+                            </div>
+                            <div class="form-group">
+                                <label>Soyad <span class="required">*</span></label>
+                                <input type="text" name="musteriSoyadi" class="form-input"
+                                       value="@ViewBag.KullaniciSoyadi" placeholder="Soyadınız" required />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Telefon <span class="required">*</span></label>
+                            <input type="tel" name="musteriTelefon" class="form-input"
+                                   value="@ViewBag.KullaniciTelefon" placeholder="05XX XXX XX XX" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label>E-posta</label>
+                            <input type="email" name="musteriEmail" class="form-input"
+                                   value="@ViewBag.KullaniciEmail" placeholder="ornek@email.com" />
+                            <small>Biletleriniz bu e-posta adresine gönderilecektir.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kart Bilgileri -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <i class="fas fa-credit-card"></i>
+                        <h2>Kart Bilgileri</h2>
+                    </div>
+                    <div class="form-card-body">
+                        <div class="form-group">
+                            <label>Kart Üzerindeki İsim <span class="required">*</span></label>
+                            <input type="text" name="kartSahibi" class="form-input"
+                                   placeholder="AD SOYAD" required style="text-transform: uppercase;" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Kart Numarası <span class="required">*</span></label>
+                            <div class="card-input-wrapper">
+                                <input type="text" name="kartNumarasi" id="kartNumarasi" class="form-input"
+                                       placeholder="0000 0000 0000 0000" maxlength="19" required />
+                                <div class="card-icons">
+                                    <i class="fab fa-cc-visa"></i>
+                                    <i class="fab fa-cc-mastercard"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Son Kullanma Tarihi <span class="required">*</span></label>
+                                <input type="text" name="sonKullanma" id="sonKullanma" class="form-input"
+                                       placeholder="AA/YY" maxlength="5" required />
+                            </div>
+                            <div class="form-group">
+                                <label>CVV <span class="required">*</span></label>
+                                <div class="cvv-input-wrapper">
+                                    <input type="password" name="cvv" id="cvv" class="form-input"
+                                           placeholder="***" maxlength="4" required />
+                                    <span class="cvv-help" title="Kartınızın arkasındaki 3 haneli kod">
+                                        <i class="fas fa-question-circle"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="secure-info">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Kart bilgileriniz 256-bit SSL şifreleme ile korunmaktadır.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-complete-payment">
+                    <i class="fas fa-lock"></i>
+                    <span>@toplamFiyat.ToString("N2") ₺ Öde</span>
+                </button>
+            </form>
+            }
+        </div>
+
+        <!-- Sağ: Sipariş Özeti -->
+        <div class="order-summary-section">
+            <div class="summary-card">
+                <div class="summary-header">
+                    <i class="fas fa-ticket-alt"></i>
+                    <h2>Sipariş Özeti</h2>
+                </div>
+                <div class="summary-body">
+                    <!-- Etkinlik Bilgisi -->
+                    <div class="event-summary">
+                        <h3>@etkinlik?.EtkinlikAdi</h3>
+                        <div class="event-meta-summary">
+                            <span><i class="fas fa-map-marker-alt"></i> @etkinlik?.Salon?.SalonAdi, @etkinlik?.Salon?.Sehir</span>
+                            <span><i class="fas fa-calendar-alt"></i> @etkinlik?.TarihSaat.ToString("dd MMMM yyyy, dddd")</span>
+                            <span><i class="fas fa-clock"></i> @etkinlik?.TarihSaat.ToString("HH:mm")</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <!-- Seçilen Koltuklar -->
+                    <div class="selected-seats-summary">
+                        <label>Seçilen Koltuklar (@koltuklar?.Count adet)</label>
+                        <div class="seats-tags-summary">
+                            @if (koltuklar != null)
+                            {
+                                @foreach (var koltuk in koltuklar)
+                                {
+                                    <span class="seat-tag-summary">@koltuk</span>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <!-- Fiyat Detayları -->
+                    <div class="price-details">
+                        <div class="price-row">
+                            <span>Bilet Fiyatı (@koltuklar?.Count x @biletFiyati.ToString("N2") ₺)</span>
+                            <span>@toplamFiyat.ToString("N2") ₺</span>
+                        </div>
+                        <div class="price-row">
+                            <span>Hizmet Bedeli</span>
+                            <span class="free">Ücretsiz</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <!-- Toplam -->
+                    <div class="total-row-summary">
+                        <span>Toplam</span>
+                        <span class="total-amount-summary">@toplamFiyat.ToString("N2") ₺</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Güvenlik Bilgisi -->
+            <div class="security-info-card">
+                <div class="security-item">
+                    <i class="fas fa-lock"></i>
+                    <span>SSL Şifreli Güvenli Ödeme</span>
+                </div>
+                <div class="security-item">
+                    <i class="fas fa-undo"></i>
+                    <span>7 Gün İçinde İade Garantisi</span>
+                </div>
+                <div class="security-item">
+                    <i class="fas fa-headset"></i>
+                    <span>7/24 Müşteri Desteği</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Kart numarası formatla (4 hanede bir boşluk)
+        $('#kartNumarasi').on('input', function() {
+            var value = $(this).val().replace(/\s/g, '').replace(/\D/g, '');
+            var formatted = value.match(/.{1,4}/g)?.join(' ') || '';
+            $(this).val(formatted);
+        });
+
+        // Son kullanma tarihi formatla (AA/YY)
+        $('#sonKullanma').on('input', function() {
+            var value = $(this).val().replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            $(this).val(value);
+        });
+
+        // CVV sadece rakam
+        $('#cvv').on('input', function() {
+            $(this).val($(this).val().replace(/\D/g, ''));
+        });
+
+        // Form submit
+        $('#paymentForm').on('submit', function(e) {
+            var btn = $('.btn-complete-payment');
+            btn.prop('disabled', true);
+            btn.html('<i class="fas fa-spinner fa-spin"></i> <span>Ödeme işleniyor...</span>');
+        });
+    });
+</script>

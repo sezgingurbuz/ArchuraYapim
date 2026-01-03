@@ -76,18 +76,18 @@ namespace basics.Areas.Admin.Controllers
         {
             // Dropdown listesinin validation'ı bozmasını engelle
             ModelState.Remove("SehirlerListesi");
+            ModelState.Remove("KategorilerJson");
 
             if (ModelState.IsValid)
             {
                 // 1. ADIM: Etkinliği Oluştur ve Kaydet
                 var yeniEtkinlik = new Etkinlik
                 {
-                    // OyunId tablon olmadığı için 0 veya varsayılan bırakıyoruz
                     EtkinlikAdi = model.EtkinlikAdi, 
                     Tur = model.Tur,
                     SalonId = model.SecilenSalonId,
-                    TarihSaat = model.Tarih.Add(model.Saat), // Tarih + Saat birleşimi
-
+                    TarihSaat = model.Tarih.Add(model.Saat),
+                    SatisTipi = model.SatisTipi ?? "Koltuk", // Satış tipi
                     SatisAktifMi = false
                 };
 
@@ -104,56 +104,125 @@ namespace basics.Areas.Admin.Controllers
                 // SaveChanges çağırıyoruz ki 'yeniEtkinlik.Id' oluşsun
                 await _dbContext.SaveChangesAsync(); 
 
-                // 2. ADIM (GÜNCELLENEN KISIM): Salonu ve Bağlı Planını Çek
-                // Artık string isimle aramıyoruz. İlişkili tabloyu (.Include) dahil ediyoruz.
-                var salon = await _dbContext.Salonlar
-                    .Include(s => s.SeatingPlan) // <--- KRİTİK NOKTA: Plan verisini de getir
-                    .FirstOrDefaultAsync(s => s.Id == model.SecilenSalonId);
-
-                // 3. ADIM: JSON'dan Biletleri Üret
-                if (salon != null && salon.SeatingPlan != null && !string.IsNullOrEmpty(salon.SeatingPlan.PlanJson))
+                // 2. ADIM: Satış tipine göre işlem yap
+                if (model.SatisTipi == "Kategori")
                 {
-                    // İlişkili tablodan JSON verisini alıyoruz
-                    string planJson = salon.SeatingPlan.PlanJson;
-
-                    using (JsonDocument doc = JsonDocument.Parse(planJson))
+                    // KATEGORİ SATIŞI: Kategorileri oluştur
+                    if (!string.IsNullOrEmpty(model.KategorilerJson))
                     {
-                        var root = doc.RootElement;
-                        
-                        // React yapısında 'koltuklar' dizisi var mı kontrol et
-                        if (root.TryGetProperty("koltuklar", out JsonElement koltuklarElement))
-                        {
-                            var biletListesi = new List<EtkinlikKoltuk>();
+                        var kategoriler = JsonSerializer.Deserialize<List<KategoriItemViewModel>>(
+                            model.KategorilerJson, 
+                            new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                        );
 
-                            foreach (var koltuk in koltuklarElement.EnumerateArray())
+                        if (kategoriler != null && kategoriler.Any())
+                        {
+                            foreach (var kat in kategoriler)
                             {
-                                // React tarafında küçük harf kullanıldığı için property isimleri küçük
-                                string blok = koltuk.GetProperty("blok").GetString();
-                                string sira = koltuk.GetProperty("sira").GetString();
-                                int numara = koltuk.GetProperty("numara").GetInt32();
-                                
-                                var yeniBilet = new EtkinlikKoltuk
+                                var yeniKategori = new EtkinlikKategori
                                 {
                                     EtkinlikId = yeniEtkinlik.Id,
-                                    Blok = blok,
-                                    Sira = sira,
-                                    Numara = numara,
-                                    KoltukNo = $"{blok}-{sira}{numara}", // Örn: A-C5
-                                    Fiyat = 0, // Etkinlik fiyatı varsayılan olur
-                                    DoluMu = false
+                                    KategoriAdi = kat.KategoriAdi,
+                                    Fiyat = kat.Fiyat,
+                                    Kontenjan = kat.Kontenjan
                                 };
-                                biletListesi.Add(yeniBilet);
+                                _dbContext.EtkinlikKategorileri.Add(yeniKategori);
                             }
-
-                            // Tüm biletleri tek seferde veritabanına at (Performanslı)
-                            await _dbContext.EtkinlikKoltuklari.AddRangeAsync(biletListesi);
                             await _dbContext.SaveChangesAsync();
                         }
                     }
-                }
 
-                // İşlem başarılı mesajı
-                TempData["SuccessMessage"] = "Etkinlik ve biletler başarıyla oluşturuldu.";
+                    // KATEGORİ SATIŞI İÇİN DE KOLTUKLARI OLUŞTUR (Gişede koltuk ataması için gerekli)
+                    var salonKategori = await _dbContext.Salonlar
+                        .Include(s => s.SeatingPlan)
+                        .FirstOrDefaultAsync(s => s.Id == model.SecilenSalonId);
+
+                    if (salonKategori != null && salonKategori.SeatingPlan != null && !string.IsNullOrEmpty(salonKategori.SeatingPlan.PlanJson))
+                    {
+                        string planJson = salonKategori.SeatingPlan.PlanJson;
+
+                        using (JsonDocument doc = JsonDocument.Parse(planJson))
+                        {
+                            var root = doc.RootElement;
+                            
+                            if (root.TryGetProperty("koltuklar", out JsonElement koltuklarElement))
+                            {
+                                var biletListesi = new List<EtkinlikKoltuk>();
+
+                                foreach (var koltuk in koltuklarElement.EnumerateArray())
+                                {
+                                    string blok = koltuk.GetProperty("blok").GetString();
+                                    string sira = koltuk.GetProperty("sira").GetString();
+                                    int numara = koltuk.GetProperty("numara").GetInt32();
+                                    
+                                    var yeniBilet = new EtkinlikKoltuk
+                                    {
+                                        EtkinlikId = yeniEtkinlik.Id,
+                                        Blok = blok,
+                                        Sira = sira,
+                                        Numara = numara,
+                                        KoltukNo = $"{blok}-{sira}{numara}",
+                                        Fiyat = 0,
+                                        DoluMu = false
+                                    };
+                                    biletListesi.Add(yeniBilet);
+                                }
+
+                                await _dbContext.EtkinlikKoltuklari.AddRangeAsync(biletListesi);
+                                await _dbContext.SaveChangesAsync();
+                            }
+                        }
+                    }
+
+                    TempData["SuccessMessage"] = "Etkinlik, kategoriler ve koltuklar başarıyla oluşturuldu.";
+                }
+                else
+                {
+                    // KOLTUK SATIŞI: Mevcut davranış - Salon planından koltuk oluştur
+                    var salon = await _dbContext.Salonlar
+                        .Include(s => s.SeatingPlan)
+                        .FirstOrDefaultAsync(s => s.Id == model.SecilenSalonId);
+
+                    if (salon != null && salon.SeatingPlan != null && !string.IsNullOrEmpty(salon.SeatingPlan.PlanJson))
+                    {
+                        string planJson = salon.SeatingPlan.PlanJson;
+
+                        using (JsonDocument doc = JsonDocument.Parse(planJson))
+                        {
+                            var root = doc.RootElement;
+                            
+                            if (root.TryGetProperty("koltuklar", out JsonElement koltuklarElement))
+                            {
+                                var biletListesi = new List<EtkinlikKoltuk>();
+
+                                foreach (var koltuk in koltuklarElement.EnumerateArray())
+                                {
+                                    string blok = koltuk.GetProperty("blok").GetString();
+                                    string sira = koltuk.GetProperty("sira").GetString();
+                                    int numara = koltuk.GetProperty("numara").GetInt32();
+                                    
+                                    var yeniBilet = new EtkinlikKoltuk
+                                    {
+                                        EtkinlikId = yeniEtkinlik.Id,
+                                        Blok = blok,
+                                        Sira = sira,
+                                        Numara = numara,
+                                        KoltukNo = $"{blok}-{sira}{numara}",
+                                        Fiyat = 0,
+                                        DoluMu = false
+                                    };
+                                    biletListesi.Add(yeniBilet);
+                                }
+
+                                await _dbContext.EtkinlikKoltuklari.AddRangeAsync(biletListesi);
+                                await _dbContext.SaveChangesAsync();
+                            }
+                        }
+                    }
+
+                    TempData["SuccessMessage"] = "Etkinlik ve biletler başarıyla oluşturuldu.";
+                }
+                
                 return RedirectToAction("Index");
             }
 
@@ -211,6 +280,7 @@ namespace basics.Areas.Admin.Controllers
             var etkinlik = await _dbContext.Etkinlikler
                 .Include(e => e.Salon)
                 .ThenInclude(s => s.SeatingPlan)
+                .Include(e => e.Kategoriler)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
             if (etkinlik == null)
@@ -223,10 +293,22 @@ namespace basics.Areas.Admin.Controllers
                 .Where(k => k.EtkinlikId == id)
                 .ToListAsync();
 
-            // ViewModel olarak anonymous type veya ViewBag kullanabiliriz şimdilik. 
-            // Daha temiz olması için Etkinlik modeline biletleri doldurup view'a gönderelim mi? 
-            // Veya ViewBag ile basitçe geçelim.
             ViewBag.Biletler = biletler;
+
+            // Kategori satışı ise, atanmamış kategori bilet sayısını hesapla
+            if (etkinlik.SatisTipi == "Kategori")
+            {
+                var kategoriIds = etkinlik.Kategoriler?.Select(k => k.Id).ToList() ?? new List<int>();
+                var toplam = await _dbContext.KategoriBiletler
+                    .Where(kb => kategoriIds.Contains(kb.EtkinlikKategoriId))
+                    .CountAsync();
+                var atanmamis = await _dbContext.KategoriBiletler
+                    .Where(kb => kategoriIds.Contains(kb.EtkinlikKategoriId) && !kb.KoltukAtandiMi)
+                    .CountAsync();
+                
+                ViewBag.ToplamKategoriBilet = toplam;
+                ViewBag.AtanmamisKategoriBilet = atanmamis;
+            }
             
             return View(etkinlik);
         }

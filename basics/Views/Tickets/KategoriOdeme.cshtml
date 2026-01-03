@@ -1,0 +1,315 @@
+@{
+    ViewData["Title"] = "Kategori Bileti Satın Al";
+    Layout = "_Layout";
+    var kategori = ViewBag.Kategori as basics.Areas.Admin.Models.EtkinlikKategori;
+    var etkinlik = ViewBag.Etkinlik as basics.Areas.Admin.Models.Etkinlik;
+    var adet = (int)ViewBag.Adet;
+    var toplamFiyat = (decimal)ViewBag.ToplamFiyat;
+    var girisYapildi = ViewBag.GirisYapildi as bool? ?? false;
+}
+
+<link rel="stylesheet" href="~/css/bilet-style.css?v=3" />
+
+<style>
+    .odeme-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+    .odeme-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px 16px 0 0;
+        text-align: center;
+    }
+    .odeme-header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    .odeme-header .event-details {
+        font-size: 0.95rem;
+        opacity: 0.9;
+    }
+    .odeme-body {
+        background: white;
+        border-radius: 0 0 16px 16px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        padding: 2rem;
+    }
+    .ozet-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .ozet-card h5 {
+        color: #1a1a2e;
+        margin-bottom: 1rem;
+    }
+    .ozet-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .ozet-row:last-child {
+        border-bottom: none;
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: #28a745;
+    }
+    .adet-secici {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .adet-btn {
+        width: 35px;
+        height: 35px;
+        border: 2px solid #1a1a2e;
+        border-radius: 50%;
+        background: white;
+        color: #1a1a2e;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .adet-btn:hover {
+        background: #1a1a2e;
+        color: white;
+    }
+    .adet-input {
+        width: 60px;
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 700;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+    }
+    .form-section {
+        margin-bottom: 2rem;
+    }
+    .form-section h5 {
+        color: #1a1a2e;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .form-section h5 i {
+        color: #1a1a2e;
+    }
+    .submit-btn {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+    }
+    .uyari-box {
+        background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    .uyari-box i {
+        font-size: 1.5rem;
+        margin-top: 0.1rem;
+    }
+</style>
+
+<div class="odeme-container">
+    <div class="odeme-header">
+        <h1><i class="fas fa-ticket-alt me-2"></i>@etkinlik?.EtkinlikAdi</h1>
+        <div class="event-details">
+            <i class="fas fa-map-marker-alt me-1"></i>@etkinlik?.Salon?.SalonAdi, @etkinlik?.Salon?.Sehir
+            &nbsp;|&nbsp;
+            <i class="fas fa-calendar me-1"></i>@etkinlik?.TarihSaat.ToString("dd MMMM yyyy, HH:mm")
+        </div>
+    </div>
+    
+    <div class="odeme-body">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            </div>
+        }
+        
+        <div class="uyari-box">
+            <i class="fas fa-info-circle"></i>
+            <div>
+                <strong>Koltuk Seçimi Gişede Yapılacaktır</strong>
+                <p class="mb-0 mt-1" style="font-size: 0.9rem;">
+                    Satın alma işleminizin ardından size bir <strong>rezervasyon kodu</strong> verilecektir. 
+                    Bu kodu gişede göstererek koltuk seçiminizi tamamlayabilirsiniz.
+                </p>
+            </div>
+        </div>
+        
+        <!-- BAKIM MODU UYARISI -->
+        <div class="card border-0 shadow-sm text-center p-4 mb-4 bg-white">
+            <div class="card-body">
+                <div class="mb-3 text-warning">
+                    <i class="fas fa-tools fa-3x"></i>
+                </div>
+                <h3 class="mb-3">Online Bilet Satışı Çok Yakında!</h3>
+                <p class="text-muted mb-4">
+                    Ödeme altyapımızdaki entegrasyon çalışmaları nedeniyle şu an için web sitemizden online satış yapılamamaktadır.
+                </p>
+                
+                <div class="alert alert-info text-start mb-4 border-0 bg-light">
+                    <div class="d-flex">
+                        <div class="me-3 mt-1">
+                            <i class="fas fa-info-circle fa-lg text-primary"></i>
+                        </div>
+                        <div>
+                            Bilet işlemleri ve rezervasyon için lütfen 
+                            <strong class="text-dark">0539 585 5858</strong> numaralı telefondan bize ulaşınız veya etkinlik günü gişemizi ziyaret ediniz.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                    <a href="/" class="btn btn-outline-primary px-4 py-2">
+                        <i class="fas fa-home me-2"></i>Ana Sayfaya Dön
+                    </a>
+                    <a href="https://wa.me/905395855858" class="btn btn-success px-4 py-2" target="_blank">
+                        <i class="fab fa-whatsapp me-2"></i>WhatsApp'tan Rezervasyon
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        @if (false) {
+        <form method="post" asp-action="KategoriOdeme" id="kategoriOdemeForm">
+            <input type="hidden" name="kategoriId" value="@kategori?.Id" />
+            
+            <!-- Sipariş Özeti -->
+            <div class="ozet-card">
+                <h5><i class="fas fa-receipt me-2"></i>Sipariş Özeti</h5>
+                <div class="ozet-row">
+                    <span>Kategori:</span>
+                    <span><strong>@kategori?.KategoriAdi</strong></span>
+                </div>
+                <div class="ozet-row">
+                    <span>Bilet Fiyatı:</span>
+                    <span>@kategori?.Fiyat.ToString("N2") ₺</span>
+                </div>
+                <div class="ozet-row">
+                    <span>Adet:</span>
+                    <div class="adet-secici">
+                        <button type="button" class="adet-btn" onclick="adetAzalt()">-</button>
+                        <input type="number" name="adet" id="adetInput" class="adet-input" value="@adet" min="1" max="10" readonly />
+                        <button type="button" class="adet-btn" onclick="adetArtir()">+</button>
+                    </div>
+                </div>
+                <div class="ozet-row">
+                    <span>Toplam:</span>
+                    <span id="toplamFiyatDisplay">@toplamFiyat.ToString("N2") ₺</span>
+                </div>
+            </div>
+            
+            <!-- Müşteri Bilgileri -->
+            <div class="form-section">
+                <h5><i class="fas fa-user"></i>Müşteri Bilgileri</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Ad *</label>
+                        <input type="text" name="musteriAdi" class="form-control" 
+                               value="@ViewBag.KullaniciAdi" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Soyad *</label>
+                        <input type="text" name="musteriSoyadi" class="form-control" 
+                               value="@ViewBag.KullaniciSoyadi" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Telefon *</label>
+                        <input type="tel" name="musteriTelefon" class="form-control" 
+                               value="@ViewBag.KullaniciTelefon" placeholder="05XX XXX XX XX" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">E-posta</label>
+                        <input type="email" name="musteriEmail" class="form-control" 
+                               value="@ViewBag.KullaniciEmail" placeholder="ornek@email.com" />
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Kart Bilgileri -->
+            <div class="form-section">
+                <h5><i class="fas fa-credit-card"></i>Kart Bilgileri</h5>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Kart Üzerindeki İsim *</label>
+                        <input type="text" name="kartSahibi" class="form-control" placeholder="AD SOYAD" required />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Kart Numarası *</label>
+                        <input type="text" name="kartNumarasi" class="form-control" 
+                               placeholder="XXXX XXXX XXXX XXXX" maxlength="19" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Son Kullanma Tarihi *</label>
+                        <input type="text" name="sonKullanma" class="form-control" 
+                               placeholder="AA/YY" maxlength="5" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">CVV *</label>
+                        <input type="text" name="cvv" class="form-control" 
+                               placeholder="XXX" maxlength="4" required />
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-lock me-2"></i>Güvenli Ödeme Yap - <span id="submitToplam">@toplamFiyat.ToString("N2")</span> ₺
+            </button>
+        </form>
+        }
+    </div>
+</div>
+
+<script>
+    var biletFiyati = @(kategori?.Fiyat ?? 0);
+    
+    function adetGuncelle() {
+        var adet = parseInt(document.getElementById('adetInput').value) || 1;
+        var toplam = adet * biletFiyati;
+        document.getElementById('toplamFiyatDisplay').textContent = toplam.toFixed(2).replace('.', ',') + ' ₺';
+        document.getElementById('submitToplam').textContent = toplam.toFixed(2).replace('.', ',');
+    }
+    
+    function adetAzalt() {
+        var input = document.getElementById('adetInput');
+        var val = parseInt(input.value) || 1;
+        if (val > 1) {
+            input.value = val - 1;
+            adetGuncelle();
+        }
+    }
+    
+    function adetArtir() {
+        var input = document.getElementById('adetInput');
+        var val = parseInt(input.value) || 1;
+        if (val < 10) {
+            input.value = val + 1;
+            adetGuncelle();
+        }
+    }
+</script>

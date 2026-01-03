@@ -162,8 +162,60 @@
                         <label class="form-label fw-bold text-muted small">Saat</label>
                         <input asp-for="Saat" type="time" class="form-control" required>
                     </div>
-
                 </div>
+
+                <!-- SATIŞ TİPİ SEÇİMİ -->
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-muted small">Satış Tipi</label>
+                        <div class="d-flex gap-4">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="SatisTipi" id="satisTipiKoltuk" value="Koltuk" checked onchange="toggleKategoriPanel()">
+                                <label class="form-check-label fw-semibold" for="satisTipiKoltuk">
+                                    <i class="fa-solid fa-couch me-1"></i> Koltuk Sat
+                                </label>
+                                <small class="d-block text-muted ms-4">Numaralı koltuk satışı yapılır</small>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="SatisTipi" id="satisTipiKategori" value="Kategori" onchange="toggleKategoriPanel()">
+                                <label class="form-check-label fw-semibold" for="satisTipiKategori">
+                                    <i class="fa-solid fa-tags me-1"></i> Kategori Sat
+                                </label>
+                                <small class="d-block text-muted ms-4">Numarasız kategori bileti satılır</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KATEGORİ EKLEME PANELİ -->
+                <div id="kategoriPanel" class="mb-4" style="display: none;">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                            <h6 class="m-0"><i class="fa-solid fa-layer-group me-2"></i>Bilet Kategorileri</h6>
+                            <button type="button" class="btn btn-sm btn-dark" onclick="kategoriEkle()">
+                                <i class="fa-solid fa-plus me-1"></i>Kategori Ekle
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info mb-3">
+                                <i class="fa-solid fa-info-circle me-2"></i>
+                                Kategori satışında müşteriler online bilet alır, gişede koltuk ataması yapılır.
+                            </div>
+                            
+                            <div id="kategoriListesi">
+                                <!-- Dinamik kategori satırları buraya eklenecek -->
+                            </div>
+                            
+                            <div id="kategoriUyari" class="text-muted text-center py-3" style="display: block;">
+                                <i class="fa-solid fa-exclamation-triangle me-2"></i>
+                                Henüz kategori eklenmedi. "Kategori Ekle" butonuna tıklayın.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hidden input for categories JSON -->
+                <input type="hidden" asp-for="KategorilerJson" id="kategorilerJson" />
 
                 <div class="d-flex justify-content-end gap-3 mt-5">
                     <button type="submit" class="btn btn-primary px-5 fw-bold">
@@ -426,5 +478,110 @@
 
     // Initialize Calendar
     renderCalendar();
+
+    // --- KATEGORİ YÖNETİMİ ---
+    var kategoriler = [];
+    var kategoriSayac = 0;
+
+    function toggleKategoriPanel() {
+        var isKategori = document.getElementById('satisTipiKategori').checked;
+        var panel = document.getElementById('kategoriPanel');
+        
+        if (isKategori) {
+            panel.style.display = 'block';
+        } else {
+            panel.style.display = 'none';
+        }
+    }
+
+    function kategoriEkle() {
+        kategoriSayac++;
+        var kategoriId = 'kategori_' + kategoriSayac;
+        
+        var html = `
+            <div id="${kategoriId}" class="kategori-satir border rounded p-3 mb-2 bg-white">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Kategori Adı</label>
+                        <input type="text" class="form-control kategori-adi" placeholder="Örn: VIP, Balkon, Parter" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Fiyat (₺)</label>
+                        <input type="number" class="form-control kategori-fiyat" min="0" step="0.01" placeholder="0.00" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Kontenjan <small class="text-muted">(opsiyonel)</small></label>
+                        <input type="number" class="form-control kategori-kontenjan" min="1" placeholder="Sınırsız">
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <label class="form-label small text-muted">&nbsp;</label>
+                        <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="kategoriSil('${kategoriId}')">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('kategoriListesi').insertAdjacentHTML('beforeend', html);
+        document.getElementById('kategoriUyari').style.display = 'none';
+        
+        updateKategorilerJson();
+    }
+
+    function kategoriSil(id) {
+        document.getElementById(id).remove();
+        
+        var liste = document.getElementById('kategoriListesi');
+        if (liste.children.length === 0) {
+            document.getElementById('kategoriUyari').style.display = 'block';
+        }
+        
+        updateKategorilerJson();
+    }
+
+    function updateKategorilerJson() {
+        var kategoriler = [];
+        var satirlar = document.querySelectorAll('.kategori-satir');
+        
+        satirlar.forEach(function(satir) {
+            var adi = satir.querySelector('.kategori-adi').value.trim();
+            var fiyat = parseFloat(satir.querySelector('.kategori-fiyat').value) || 0;
+            var kontenjan = satir.querySelector('.kategori-kontenjan').value;
+            
+            if (adi) {
+                kategoriler.push({
+                    KategoriAdi: adi,
+                    Fiyat: fiyat,
+                    Kontenjan: kontenjan ? parseInt(kontenjan) : null
+                });
+            }
+        });
+        
+        document.getElementById('kategorilerJson').value = JSON.stringify(kategoriler);
+    }
+
+    // Form submit öncesi kategorileri güncelle
+    document.querySelector('form').addEventListener('submit', function(e) {
+        var isKategori = document.getElementById('satisTipiKategori').checked;
+        
+        if (isKategori) {
+            updateKategorilerJson();
+            
+            var kategorilerValue = document.getElementById('kategorilerJson').value;
+            var kategoriler = JSON.parse(kategorilerValue || '[]');
+            
+            if (kategoriler.length === 0) {
+                e.preventDefault();
+                alert('Kategori satışı seçtiniz ama hiç kategori eklemediniz. Lütfen en az bir kategori ekleyin.');
+                return false;
+            }
+        }
+    });
+
+    // Input değişikliklerinde JSON güncelle
+    document.getElementById('kategoriListesi').addEventListener('input', function(e) {
+        updateKategorilerJson();
+    });
 
 </script>

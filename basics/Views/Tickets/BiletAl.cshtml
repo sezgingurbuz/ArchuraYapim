@@ -3,163 +3,327 @@
     ViewData["Title"] = "Bilet Al - " + Model.EtkinlikAdi;
     Layout = "_Layout";
     var biletler = ViewBag.Biletler as List<basics.Areas.Admin.Models.EtkinlikKoltuk>;
+    var kategoriler = ViewBag.Kategoriler as List<basics.Areas.Admin.Models.EtkinlikKategori>;
+    var kategoriSatisSayilari = ViewBag.KategoriSatisSayilari as Dictionary<int, int>;
+    var satisTipi = ViewBag.SatisTipi as string ?? "Koltuk";
+    var biletFiyati = ViewBag.BiletFiyati as decimal? ?? 150m;
 }
 
-<link rel="stylesheet" href="~/css/bilet-style.css" />
+<link rel="stylesheet" href="~/css/bilet-style.css?v=3" />
 
-<div class="bilet-page">
-    <div class="container py-4">
-        <!-- Başlık -->
-        <div class="bilet-header mb-4">
-            <a asp-action="Index" class="btn-back">
-                <i class="fas fa-arrow-left"></i>
-                <span>Etkinliklere Dön</span>
-            </a>
-            <div class="event-info">
+<div class="bilet-page-new">
+    <!-- Header: Etkinlik Bilgileri -->
+    <div class="bilet-header-bar">
+        <div class="header-left">
+            <div class="event-poster">
+                <div class="poster-placeholder">
+                    <i class="fas fa-theater-masks"></i>
+                </div>
+            </div>
+            <div class="event-info-compact">
                 <h1>@Model.EtkinlikAdi</h1>
-                <div class="event-details">
+                <div class="event-meta">
+                    <span><i class="fas fa-map-marker-alt"></i> @Model.Salon?.SalonAdi, @Model.Salon?.Sehir</span>
                     <span><i class="fas fa-calendar-alt"></i> @Model.TarihSaat.ToString("dd MMMM yyyy, dddd")</span>
                     <span><i class="fas fa-clock"></i> @Model.TarihSaat.ToString("HH:mm")</span>
-                    <span><i class="fas fa-map-marker-alt"></i> @Model.Salon?.SalonAdi, @Model.Salon?.Sehir</span>
                 </div>
             </div>
         </div>
+        <div class="header-right">
+            <a asp-action="Index" class="btn-back-small">
+                <i class="fas fa-arrow-left"></i>
+                <span>Geri</span>
+            </a>
+        </div>
+    </div>
 
-        @if (TempData["SuccessMessage"] != null)
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <span>@TempData["SuccessMessage"]</span>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>@TempData["ErrorMessage"]</span>
+        </div>
+    }
+
+    <!-- Main Content -->
+    <div class="bilet-main-content">
+        
+        @if (satisTipi == "Kategori")
         {
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i>
-                <span>@TempData["SuccessMessage"]</span>
-            </div>
-        }
-
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-circle"></i>
-                <span>@TempData["ErrorMessage"]</span>
-            </div>
-        }
-
-        <div class="bilet-content">
-            <!-- Satın Alma Formu -->
-            <div class="purchase-section">
-                <div class="section-card sticky-form">
-                    <div class="section-header">
-                        <h2><i class="fas fa-shopping-cart"></i> Satın Al</h2>
+            <!-- KATEGORİ SATIŞI -->
+            <style>
+                .kategori-overlay {
+                    position: relative;
+                    width: 100%;
+                }
+                .blurred-seats {
+                    filter: blur(8px);
+                    opacity: 0.4;
+                    pointer-events: none;
+                    user-select: none;
+                }
+                .kategori-cards-container {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10;
+                    padding: 2rem;
+                }
+                .kategori-warning {
+                    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+                    color: white;
+                    padding: 1rem 2rem;
+                    border-radius: 12px;
+                    margin-bottom: 2rem;
+                    text-align: center;
+                    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+                    max-width: 600px;
+                }
+                .kategori-warning i {
+                    font-size: 1.5rem;
+                    margin-right: 0.5rem;
+                }
+                .kategori-cards {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 1.5rem;
+                    justify-content: center;
+                    max-width: 900px;
+                }
+                .kategori-card {
+                    background: white;
+                    border-radius: 16px;
+                    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+                    padding: 1.5rem;
+                    min-width: 220px;
+                    text-align: center;
+                    transition: transform 0.3s, box-shadow 0.3s;
+                    cursor: pointer;
+                    border: 3px solid transparent;
+                }
+                .kategori-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+                    border-color: #28a745;
+                }
+                .kategori-card.tukendi {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+                .kategori-card.tukendi:hover {
+                    transform: none;
+                    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+                    border-color: transparent;
+                }
+                .kategori-name {
+                    font-size: 1.3rem;
+                    font-weight: 700;
+                    color: #1a1a2e;
+                    margin-bottom: 0.5rem;
+                }
+                .kategori-price {
+                    font-size: 1.8rem;
+                    font-weight: 800;
+                    color: #28a745;
+                    margin-bottom: 0.5rem;
+                }
+                .kategori-kontenjan {
+                    font-size: 0.85rem;
+                    color: #6c757d;
+                    margin-bottom: 1rem;
+                }
+                .kategori-btn {
+                    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                    color: white;
+                    border: none;
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 25px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    width: 100%;
+                    text-decoration: none;
+                    display: block;
+                }
+                .kategori-btn:hover {
+                    background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+                    transform: scale(1.05);
+                    color: white;
+                }
+                .kategori-btn.disabled {
+                    background: #ccc;
+                    cursor: not-allowed;
+                }
+            </style>
+            
+            <div class="kategori-overlay">
+                <!-- Blur'lu koltuk düzeni arka planda -->
+                <div class="seating-wrapper blurred-seats">
+                    <div id="seating-area" class="seating-area-fullscreen">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Koltuklar yükleniyor...</span>
+                        </div>
                     </div>
-                    <div class="section-body">
-                        <form asp-action="BiletAl" method="post" id="purchaseForm">
-                            <input type="hidden" name="etkinlikId" value="@Model.Id" />
-                            
-                            <div class="form-group">
-                                <label>Seçilen Koltuklar</label>
-                                <input type="text" name="koltuklar" id="selectedSeats" class="form-input" 
-                                       placeholder="Koltuk seçiniz..." readonly required />
-                                <small>Koltukları seçmek için üstteki alandan tıklayın</small>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Bilet Fiyatı (₺)</label>
-                                <input type="number" name="fiyat" class="form-input" 
-                                       value="150" step="0.01" min="0" required />
-                            </div>
-
-                            <div class="form-divider"></div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Ad <span class="required">*</span></label>
-                                    <input type="text" name="musteriAdi" class="form-input" 
-                                           value="@ViewBag.KullaniciAdi" placeholder="Adınız" required />
-                                </div>
-                                <div class="form-group">
-                                    <label>Soyad <span class="required">*</span></label>
-                                    <input type="text" name="musteriSoyadi" class="form-input" 
-                                           value="@ViewBag.KullaniciSoyadi" placeholder="Soyadınız" required />
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Telefon <span class="required">*</span></label>
-                                <input type="tel" name="musteriTelefon" class="form-input" 
-                                       value="@ViewBag.KullaniciTelefon" placeholder="05XX XXX XX XX" required />
-                            </div>
-
-                            <div class="form-group">
-                                <label>E-posta</label>
-                                <input type="email" name="musteriEmail" class="form-input" 
-                                       value="@ViewBag.KullaniciEmail" placeholder="ornek@email.com" />
-                            </div>
-
-                            <div class="purchase-summary">
-                                <div class="summary-row">
-                                    <span>Seçilen Koltuk</span>
-                                    <span id="seatCount">0</span>
-                                </div>
-                                <div class="summary-row total">
-                                    <span>Toplam</span>
-                                    <span id="totalPrice">₺0.00</span>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="btn-purchase">
-                                <i class="fas fa-credit-card"></i>
-                                <span>Satın Al</span>
-                            </button>
-                        </form>
-
-                        @if (!User.IsInRole("Customer"))
+                    <div class="stage-bottom">SAHNE</div>
+                </div>
+                
+                <!-- Kategori kartları overlay -->
+                <div class="kategori-cards-container">
+                    <div class="kategori-warning">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Koltuk seçimi gişede yapılacaktır.</strong>
+                        <p class="mb-0 mt-2" style="font-size: 0.9rem;">
+                            Online satın aldığınız biletinizi gişede göstererek koltuk seçiminizi tamamlayabilirsiniz.
+                        </p>
+                    </div>
+                    
+                    <div class="kategori-cards">
+                        @if (kategoriler != null && kategoriler.Any())
                         {
-                            <div class="login-prompt">
-                                <p>Hesabınız var mı? Giriş yaparak bilgilerinizi otomatik doldurun.</p>
-                                <button type="button" class="btn-login-link" onclick="showLoginPopup()">
-                                    <i class="fas fa-sign-in-alt"></i> Giriş Yap
-                                </button>
+                            @foreach (var kat in kategoriler)
+                            {
+                                var satilanAdet = kategoriSatisSayilari?.ContainsKey(kat.Id) == true ? kategoriSatisSayilari[kat.Id] : 0;
+                                var kalanKontenjan = kat.Kontenjan.HasValue ? kat.Kontenjan.Value - satilanAdet : (int?)null;
+                                var tukendi = kalanKontenjan.HasValue && kalanKontenjan <= 0;
+                                
+                                <div class="kategori-card @(tukendi ? "tukendi" : "")">
+                                    <div class="kategori-name">@kat.KategoriAdi</div>
+                                    <div class="kategori-price">@kat.Fiyat.ToString("N2") ₺</div>
+                                    @if (kat.Kontenjan.HasValue)
+                                    {
+                                        <div class="kategori-kontenjan">
+                                            @if (tukendi)
+                                            {
+                                                <span class="text-danger"><i class="fas fa-times-circle"></i> Tükendi</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Kalan: @kalanKontenjan bilet</span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="kategori-kontenjan">Sınırsız kontenjan</div>
+                                    }
+                                    
+                                    @if (!tukendi)
+                                    {
+                                        <a asp-action="KategoriOdeme" asp-route-kategoriId="@kat.Id" asp-route-adet="1" class="kategori-btn">
+                                            <i class="fas fa-shopping-cart me-2"></i>Satın Al
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <button class="kategori-btn disabled" disabled>Tükendi</button>
+                                    }
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center text-white">
+                                <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                                <p>Bu etkinlik için henüz kategori tanımlanmamış.</p>
                             </div>
                         }
                     </div>
                 </div>
             </div>
+        }
+        else
+        {
+            <!-- KOLTUK SATIŞI (Mevcut davranış) -->
+            <!-- Legend Bar -->
+            <div class="legend-bar">
+                <div class="legend-item">
+                    <div class="legend-box selected"></div>
+                    <span>Seçilen</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box sold"></div>
+                    <span>Dolu</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box empty"></div>
+                    <span>Boş</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box decorative"></div>
+                    <span>Kayıt Dışı</span>
+                </div>
+            </div>
 
-            <!-- Koltuk Seçimi -->
-            <div class="seating-section">
-                <div class="section-card">
-                    <div class="section-header">
-                        <h2><i class="fas fa-couch"></i> Koltuk Seçimi</h2>
+            <!-- Floating Price Card -->
+            <div class="price-card-floating">
+                <div class="price-card-header">
+                    <i class="fas fa-clock"></i>
+                    <span>BİLET FİYATLARI</span>
+                </div>
+                <div class="price-card-body">
+                    <div class="price-list">
+                        <div class="price-item">
+                            <span class="price-amount">@biletFiyati.ToString("N2") ₺</span>
+                            <span class="price-type">Tam</span>
+                        </div>
                     </div>
-                    <div class="section-body">
-                        <div id="seating-area" class="seating-area">
-                            <div class="loading-spinner">
-                                <i class="fas fa-spinner fa-spin"></i>
-                                <span>Koltuklar yükleniyor...</span>
+                    
+                    <!-- Koltuk seçilmeden önce -->
+                    <div id="noSeatSelected" class="no-seat-state">
+                        <button type="button" class="btn-select-seat">KOLTUK SEÇİNİZ</button>
+                    </div>
+
+                    <!-- Koltuk seçildikten sonra -->
+                    <div id="seatSelectedState" class="seat-selected-state" style="display: none;">
+                        <div class="selected-seats-list">
+                            <label>Seçilen Koltuklar:</label>
+                            <div id="selectedSeatsList" class="seats-tags"></div>
+                        </div>
+                        <div class="total-section">
+                            <div class="total-row">
+                                <span class="total-label">Toplam (<span id="seatCountDisplay">0</span> bilet)</span>
+                                <span id="totalPriceDisplay" class="total-amount">0,00 ₺</span>
                             </div>
                         </div>
-
-                        <div class="stage">SAHNE</div>
-
-                        <div class="seat-legend">
-                            <div class="legend-item">
-                                <div class="legend-box empty"></div>
-                                <span>Boş</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-box selected"></div>
-                                <span>Seçili</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-box sold"></div>
-                                <span>Satılmış</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-box decorative"></div>
-                                <span>Kayıt Dışı</span>
-                            </div>
-                        </div>
+                        <form asp-action="OdemeYap" method="get" id="paymentForm">
+                            <input type="hidden" name="etkinlikId" value="@Model.Id" />
+                            <input type="hidden" name="koltuklar" id="selectedSeatsInput" />
+                            <input type="hidden" name="toplamFiyat" id="totalPriceInput" />
+                            <button type="submit" class="btn-payment">
+                                <i class="fas fa-credit-card"></i>
+                                <span>Ödeme Yap</span>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Seating Area - Full Screen -->
+            <div class="seating-wrapper">
+                <div id="seating-area" class="seating-area-fullscreen">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Koltuklar yükleniyor...</span>
+                    </div>
+                </div>
+                <div class="stage-bottom">SAHNE</div>
+            </div>
+        }
     </div>
 </div>
 
@@ -222,7 +386,7 @@
 <script>
     $(document).ready(function() {
         var selectedSeats = [];
-        var ticketPrice = parseFloat($('input[name="fiyat"]').val()) || 150;
+        var ticketPrice = @biletFiyati;
         
         // Giriş yapmamış kullanıcı için popup'ı otomatik aç
         @if (!User.IsInRole("Customer"))
@@ -232,16 +396,29 @@
             </text>
         }
         
-        // Fiyat değiştiğinde toplamı güncelle
-        $('input[name="fiyat"]').on('change keyup', function() {
-            ticketPrice = parseFloat($(this).val()) || 0;
-            updateSummary();
-        });
-        
-        function updateSummary() {
-            $('#seatCount').text(selectedSeats.length);
-            var total = selectedSeats.length * ticketPrice;
-            $('#totalPrice').text('₺' + total.toFixed(2));
+        function updateUI() {
+            var count = selectedSeats.length;
+            var total = count * ticketPrice;
+            
+            if (count > 0) {
+                $('#noSeatSelected').hide();
+                $('#seatSelectedState').show();
+                
+                // Seçilen koltukları listele
+                var seatsTags = '';
+                selectedSeats.forEach(function(seat) {
+                    seatsTags += '<span class="seat-tag">' + seat + '</span>';
+                });
+                $('#selectedSeatsList').html(seatsTags);
+                
+                $('#seatCountDisplay').text(count);
+                $('#totalPriceDisplay').text(total.toFixed(2).replace('.', ',') + ' ₺');
+                $('#selectedSeatsInput').val(selectedSeats.join(','));
+                $('#totalPriceInput').val(total);
+            } else {
+                $('#noSeatSelected').show();
+                $('#seatSelectedState').hide();
+            }
         }
         
         // --- Absolute Positioning Render Logic ---
@@ -312,7 +489,8 @@
                 seatingArea.css({
                     'position': 'relative',
                     'width': '100%',
-                    'height': '600px', 
+                    'min-height': '500px',
+                    'height': 'auto',
                     'overflow': 'auto',
                     'background-color': '#111827',
                     'border-radius': '8px',
@@ -327,7 +505,7 @@
                     'width': exactWidth + 'px',
                     'height': exactHeight + 'px',
                     'min-width': exactWidth + 'px',
-                    'margin': 'auto'                // Center using margin
+                    'margin': 'auto'
                 });
                 seatingArea.append(canvas);
 
@@ -388,8 +566,7 @@
                                 selectedSeats.push(seatNo);
                             }
                             
-                            $('#selectedSeats').val(selectedSeats.join(', '));
-                            updateSummary();
+                            updateUI();
                         });
                     }
                     

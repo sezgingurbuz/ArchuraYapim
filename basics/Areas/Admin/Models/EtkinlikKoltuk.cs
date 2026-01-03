@@ -33,5 +33,9 @@ namespace basics.Areas.Admin.Models
         public DateTime? SatisTarihi { get; set; }
         public string? SatisYapanKullanici { get; set; } // Satışı yapan admin kullanıcısı
         public string? SatisPlatformu { get; set; } // Archura, Bubilet, Biletinial
+
+        // QR Kod Doğrulama
+        public Guid BiletKodu { get; set; } = Guid.NewGuid(); // Benzersiz bilet tanımlayıcısı
+        public bool GirisYapildiMi { get; set; } = false; // Etkinliğe giriş yapıldı mı?
     }
 }

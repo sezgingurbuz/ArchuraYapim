@@ -129,6 +129,78 @@ public class AccountController : Controller
         return Json(new { success = false, message = "E-posta veya şifre hatalı!" });
     }
 
+    [HttpGet]
+    public IActionResult GoogleLogin()
+    {
+        var redirectUrl = Url.Action("GoogleResponse", "Account");
+        var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+        return Challenge(properties, Microsoft.AspNetCore.Authentication.Google.GoogleDefaults.AuthenticationScheme);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GoogleResponse()
+    {
+        var result = await HttpContext.AuthenticateAsync(CustomerScheme);
+        if (!result.Succeeded)
+        {
+            // Google'dan bilgi alınamadı
+            ViewBag.Error = "Google ile giriş yapılırken bir hata oluştu.";
+            return View("Login");
+        }
+
+        var claims = result.Principal.Identities.FirstOrDefault()?.Claims;
+        var email = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+        var name = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+        var firstName = claims?.FirstOrDefault(c => c.Type == ClaimTypes.GivenName)?.Value ?? name?.Split(' ')[0];
+        var lastName = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Surname)?.Value ?? (name?.Contains(' ') == true ? name[(name.IndexOf(' ')+1)..] : "");
+
+        if (string.IsNullOrEmpty(email))
+        {
+             ViewBag.Error = "Google hesabınızdan e-posta bilgisi alınamadı.";
+             return View("Login");
+        }
+
+        var user = _dbContext.Users.FirstOrDefault(u => u.Email == email);
+        if (user == null)
+        {
+            // Yeni kullanıcı oluştur
+            user = new User
+            {
+                Email = email,
+                FirstName = firstName ?? "Google",
+                LastName = lastName ?? "User",
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()), // Rastgele şifre
+                PhoneNumber = "+900000000000" // Zorunlu alan olduğu için placeholder
+            };
+            _dbContext.Users.Add(user);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        // Kullanıcı girişini yap (Kendi scheme'imizle)
+        var appClaims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.FullName),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role, "Customer"),
+            new Claim("UserId", user.Id.ToString())
+        };
+
+        var claimsIdentity = new ClaimsIdentity(appClaims, CustomerScheme);
+        var authProperties = new AuthenticationProperties
+        {
+            IsPersistent = true,
+            ExpiresUtc = DateTime.UtcNow.AddDays(30)
+        };
+
+        // Önceki geçici Google cookie'sini silip kendi cookie'mizi oluşturuyoruz
+        await HttpContext.SignOutAsync(CustomerScheme);
+        await HttpContext.SignInAsync(CustomerScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+
+        return RedirectToAction("Index", "Home");
+    }
+
     #endregion
 
     #region Register
@@ -259,6 +331,140 @@ public class AccountController : Controller
     {
         await HttpContext.SignOutAsync(CustomerScheme);
         return RedirectToAction("Index", "Home");
+    }
+
+    #endregion
+
+    #region Profile
+
+    [HttpGet]
+    public async Task<IActionResult> Profile()
+    {
+        var authResult = await HttpContext.AuthenticateAsync(CustomerScheme);
+        if (!authResult.Succeeded)
+        {
+            return RedirectToAction("Login");
+        }
+
+        var userIdClaim = authResult.Principal.FindFirst("UserId")?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+        {
+            return RedirectToAction("Login");
+        }
+
+        var user = await _dbContext.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        ViewData["Title"] = "Profilim";
+        return View(user);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Profile(string firstName, string lastName, string email, string? city, DateTime? birthDate, string? phoneNumber)
+    {
+        var authResult = await HttpContext.AuthenticateAsync(CustomerScheme);
+        if (!authResult.Succeeded)
+        {
+            return RedirectToAction("Login");
+        }
+
+        var userIdClaim = authResult.Principal.FindFirst("UserId")?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+        {
+            return RedirectToAction("Login");
+        }
+
+        var user = await _dbContext.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        // Validation
+        if (string.IsNullOrWhiteSpace(firstName))
+        {
+            ViewBag.Error = "Ad alanı boş bırakılamaz.";
+            return View(user);
+        }
+
+        if (string.IsNullOrWhiteSpace(lastName))
+        {
+            ViewBag.Error = "Soyad alanı boş bırakılamaz.";
+            return View(user);
+        }
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            ViewBag.Error = "E-posta alanı boş bırakılamaz.";
+            return View(user);
+        }
+
+        // E-posta değiştiyse, başka bir kullanıcı tarafından kullanılıp kullanılmadığını kontrol et
+        if (user.Email != email.Trim().ToLower())
+        {
+            var existingUser = _dbContext.Users.FirstOrDefault(u => u.Email == email.Trim().ToLower() && u.Id != userId);
+            if (existingUser != null)
+            {
+                ViewBag.Error = "Bu e-posta adresi başka bir kullanıcı tarafından kullanılıyor.";
+                return View(user);
+            }
+        }
+
+        // Telefon numarası formatını düzelt
+        string? formattedPhone = null;
+        if (!string.IsNullOrWhiteSpace(phoneNumber))
+        {
+            var cleanPhone = phoneNumber.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
+            // Eğer +90 ile başlamıyorsa ekle
+            if (!cleanPhone.StartsWith("+90"))
+            {
+                if (cleanPhone.StartsWith("0"))
+                {
+                    cleanPhone = "+9" + cleanPhone;
+                }
+                else
+                {
+                    cleanPhone = "+90" + cleanPhone;
+                }
+            }
+            formattedPhone = cleanPhone;
+        }
+
+        // Güncelle
+        user.FirstName = firstName.Trim();
+        user.LastName = lastName.Trim();
+        user.Email = email.Trim().ToLower();
+        user.City = city?.Trim();
+        user.BirthDate = birthDate;
+        user.PhoneNumber = formattedPhone;
+
+        await _dbContext.SaveChangesAsync();
+
+        // Oturumu yeniden oluştur (isim değişmiş olabilir)
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.FullName),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role, "Customer"),
+            new Claim("UserId", user.Id.ToString())
+        };
+
+        var claimsIdentity = new ClaimsIdentity(claims, CustomerScheme);
+        var authProperties = new AuthenticationProperties
+        {
+            IsPersistent = true,
+            ExpiresUtc = DateTime.UtcNow.AddDays(30)
+        };
+
+        await HttpContext.SignOutAsync(CustomerScheme);
+        await HttpContext.SignInAsync(CustomerScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+
+        ViewBag.Success = "Profiliniz başarıyla güncellendi.";
+        ViewData["Title"] = "Profilim";
+        return View(user);
     }
 
     #endregion

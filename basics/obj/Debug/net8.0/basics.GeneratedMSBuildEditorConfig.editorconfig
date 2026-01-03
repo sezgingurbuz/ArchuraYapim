@@ -30,6 +30,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQWRtaW5cVXNlcnMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Areas/Admin/Views/BiletKontrol/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQmlsZXRLb250cm9sXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Areas/Admin/Views/Etkinlikler/Detay.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRXRraW5saWtsZXJcRGV0YXkuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -70,6 +74,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcU2F0aXNsYXJcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Areas/Admin/Views/Satislar/KoltukAtama.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcU2F0aXNsYXJcS29sdHVrQXRhbWEuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Areas/Admin/Views/Satislar/SatisYap.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcU2F0aXNsYXJcU2F0aXNZYXAuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -80,6 +88,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Views/Account/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Views/Account/Profile.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxQcm9maWxlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Views/Account/Register.cshtml]
@@ -102,6 +114,22 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Views/Pages/IadeIptal.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFnZXNcSWFkZUlwdGFsLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Views/Pages/Iletisim.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFnZXNcSWxldGlzaW0uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Views/Pages/KullanimSartlari.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFnZXNcS3VsbGFuaW1TYXJ0bGFyaS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Views/Pages/Kvkk.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFnZXNcS3Zray5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -118,12 +146,28 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGlja2V0c1xCaWxldEFsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Views/Tickets/BiletGrubuDetay.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGlja2V0c1xCaWxldEdydWJ1RGV0YXkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Views/Tickets/Biletlerim.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGlja2V0c1xCaWxldGxlcmltLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Views/Tickets/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGlja2V0c1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Views/Tickets/KategoriBiletDetay.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGlja2V0c1xLYXRlZ29yaUJpbGV0RGV0YXkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Views/Tickets/KategoriOdeme.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGlja2V0c1xLYXRlZ29yaU9kZW1lLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Views/Tickets/OdemeYap.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGlja2V0c1xPZGVtZVlhcC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [E:/Yazilim/ASP NET-CORE/Proje/ArchuraYapim/basics/Views/_ViewImports.cshtml]

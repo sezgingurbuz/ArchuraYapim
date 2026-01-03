@@ -14,6 +14,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Salon> Salonlar { get; set; }
     public DbSet<Etkinlik> Etkinlikler { get; set; }
     public DbSet<EtkinlikKoltuk> EtkinlikKoltuklari { get; set; }
+    public DbSet<EtkinlikKategori> EtkinlikKategorileri { get; set; }
+    public DbSet<KategoriBilet> KategoriBiletler { get; set; }
     public DbSet<AdminUser> AdminUsers { get; set; }
     public DbSet<EtkinlikRapor> EtkinlikRaporlari { get; set; }
     public DbSet<GalleryImage> GalleryImages { get; set; }

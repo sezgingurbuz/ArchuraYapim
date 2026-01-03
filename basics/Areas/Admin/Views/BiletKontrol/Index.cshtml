@@ -1,0 +1,314 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Bilet Kontrol - QR Okuyucu</title>
+    
+    <!-- html5-qrcode CDN -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: #2c2c2c;
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 3px solid #c8af8b;
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+            color: #c8af8b;
+        }
+
+        .scanner-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        #reader {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .instructions {
+            text-align: center;
+            padding: 15px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        /* Sonuç Alanı - Kameranın altında */
+        .result-container {
+            margin-top: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .result-box {
+            padding: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @@keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-box.success {
+            background: linear-gradient(135deg, #27ae60, #219653);
+        }
+
+        .result-box.error {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .result-box.warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .result-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .result-message {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-details {
+            background: rgba(255,255,255,0.15);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .result-details p {
+            margin-bottom: 5px;
+        }
+
+        .result-details strong {
+            color: #fff;
+        }
+
+        .scan-count {
+            text-align: center;
+            padding: 15px;
+            background: #2c2c2c;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .scan-count span {
+            color: #c8af8b;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* Kamera seçici stili */
+        #reader__dashboard_section_csr select {
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: none;
+            background: #3c3c3c;
+            color: #fff;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        #reader__dashboard_section_csr button {
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: none;
+            background: #c8af8b;
+            color: #000;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎫 Bilet Kontrol Sistemi</h1>
+    </div>
+
+    <div class="scanner-container">
+        <div id="reader"></div>
+        
+        <div class="instructions" id="instructions">
+            Kamerayı QR koda tutun
+        </div>
+
+        <!-- Sonuç alanı - kameranın altında -->
+        <div class="result-container">
+            <div class="result-box" id="resultBox">
+                <div class="result-icon" id="resultIcon"></div>
+                <div class="result-message" id="resultMessage"></div>
+                <div class="result-details" id="resultDetails"></div>
+            </div>
+        </div>
+
+        <div class="scan-count">
+            Toplam Giriş: <span id="scanCount">0</span>
+        </div>
+    </div>
+
+    <!-- Ses dosyaları -->
+    <audio id="correctSound" preload="auto" src="/sound/correct.mp3"></audio>
+    <audio id="errorSound" preload="auto" src="/sound/error.mp3"></audio>
+
+    <script>
+        let html5QrCode;
+        let isProcessing = false;
+        let scanCount = 0;
+        let lastScannedCode = '';
+
+        // Ses elementleri
+        const correctSound = document.getElementById('correctSound');
+        const errorSound = document.getElementById('errorSound');
+
+        function playSuccessSound() {
+            correctSound.currentTime = 0;
+            correctSound.play().catch(e => console.log('Ses çalınamadı:', e));
+        }
+
+        function playErrorSound() {
+            errorSound.currentTime = 0;
+            errorSound.play().catch(e => console.log('Ses çalınamadı:', e));
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            // Aynı kodu tekrar taramayı engelle (2 sn bekleme)
+            if (isProcessing || decodedText === lastScannedCode) return;
+            
+            isProcessing = true;
+            lastScannedCode = decodedText;
+
+            // 2 saniye sonra aynı kodu tekrar taramaya izin ver
+            setTimeout(() => {
+                lastScannedCode = '';
+            }, 2000);
+
+            fetch('/Admin/BiletKontrol/KontrolEt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ kod: decodedText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showResult(data);
+                isProcessing = false;
+            })
+            .catch(error => {
+                showResult({ success: false, message: 'Bağlantı hatası!' });
+                isProcessing = false;
+            });
+        }
+
+        function showResult(data) {
+            const box = document.getElementById('resultBox');
+            const icon = document.getElementById('resultIcon');
+            const message = document.getElementById('resultMessage');
+            const details = document.getElementById('resultDetails');
+
+            // Önceki sınıfları temizle
+            box.className = 'result-box show';
+            
+            if (data.success) {
+                box.classList.add('success');
+                icon.textContent = '✅';
+                message.textContent = 'GİRİŞ BAŞARILI!';
+                details.innerHTML = `
+                    <p><strong>Müşteri:</strong> ${data.musteriAdi}</p>
+                    <p><strong>Koltuk:</strong> ${data.koltukNo}</p>
+                    <p><strong>Etkinlik:</strong> ${data.etkinlikAdi}</p>
+                `;
+                playSuccessSound();
+                
+                scanCount++;
+                document.getElementById('scanCount').textContent = scanCount;
+                
+            } else if (data.kullanilmis) {
+                box.classList.add('warning');
+                icon.textContent = '⚠️';
+                message.textContent = 'KULLANILMIŞ!';
+                details.innerHTML = `
+                    <p><strong>Müşteri:</strong> ${data.musteriAdi}</p>
+                    <p><strong>Koltuk:</strong> ${data.koltukNo}</p>
+                    <p><strong>Etkinlik:</strong> ${data.etkinlikAdi}</p>
+                `;
+                playErrorSound();
+                
+            } else {
+                box.classList.add('error');
+                icon.textContent = '❌';
+                message.textContent = 'HATA!';
+                details.innerHTML = `<p>${data.message}</p>`;
+                playErrorSound();
+            }
+        }
+
+        function startScanner() {
+            html5QrCode = new Html5Qrcode("reader");
+            
+            const config = {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
+            };
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                onScanSuccess,
+                () => {}
+            ).catch(err => {
+                document.getElementById('instructions').textContent = 
+                    'Kamera erişimi sağlanamadı. Lütfen kamera iznini kontrol edin.';
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            startScanner();
+        });
+    </script>
+</body>
+</html>

@@ -28,6 +28,13 @@ builder.Services.AddAuthentication(options =>
     options.SlidingExpiration = true;
     options.AccessDeniedPath = "/Account/Login";
     options.Cookie.Name = "CustomerAuth";
+})
+.AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    // Google ile giriş başarılı olduğunda CustomerScheme çerezine yazsın
+    options.SignInScheme = "CustomerScheme";
 });
 
 // Authorization Policy'leri

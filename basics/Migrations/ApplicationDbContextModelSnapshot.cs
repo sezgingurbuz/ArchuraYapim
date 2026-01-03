@@ -59,6 +59,10 @@ namespace basics.Migrations
                     b.Property<bool>("SatisAktifMi")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<string>("SatisTipi")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<DateTime>("TarihSaat")
                         .HasColumnType("datetime(6)");
 
@@ -73,11 +77,40 @@ namespace basics.Migrations
                     b.ToTable("Etkinlikler");
                 });
 
+            modelBuilder.Entity("basics.Areas.Admin.Models.EtkinlikKategori", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("EtkinlikId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Fiyat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("KategoriAdi")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("Kontenjan")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EtkinlikId");
+
+                    b.ToTable("EtkinlikKategorileri");
+                });
+
             modelBuilder.Entity("basics.Areas.Admin.Models.EtkinlikKoltuk", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    b.Property<Guid>("BiletKodu")
+                        .HasColumnType("char(36)");
 
                     b.Property<string>("Blok")
                         .IsRequired()
@@ -91,6 +124,9 @@ namespace basics.Migrations
 
                     b.Property<decimal>("Fiyat")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("GirisYapildiMi")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("KoltukNo")
                         .IsRequired()
@@ -230,6 +266,71 @@ namespace basics.Migrations
                     b.ToTable("GalleryImages");
                 });
 
+            modelBuilder.Entity("basics.Areas.Admin.Models.KategoriBilet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AtananKoltukId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("BiletKodu")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("EtkinlikKategoriId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("GirisYapildiMi")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime?>("KoltukAtamaTarihi")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("KoltukAtandiMi")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("MusteriAdi")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("MusteriEmail")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("MusteriSoyadi")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("MusteriTelefon")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("OdemeYontemi")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<decimal>("OdenenFiyat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("RezervasyonKodu")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("SatisTarihi")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AtananKoltukId");
+
+                    b.HasIndex("EtkinlikKategoriId");
+
+                    b.ToTable("KategoriBiletler");
+                });
+
             modelBuilder.Entity("basics.Areas.Admin.Models.Salon", b =>
                 {
                     b.Property<int>("Id")
@@ -270,7 +371,7 @@ namespace basics.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2025, 12, 27, 11, 36, 9, 667, DateTimeKind.Utc).AddTicks(9360));
+                        .HasDefaultValue(new DateTime(2026, 1, 3, 19, 21, 46, 191, DateTimeKind.Utc).AddTicks(3393));
 
                     b.Property<string>("Durum")
                         .IsRequired()
@@ -295,7 +396,7 @@ namespace basics.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2025, 12, 27, 11, 36, 9, 667, DateTimeKind.Utc).AddTicks(9869));
+                        .HasDefaultValue(new DateTime(2026, 1, 3, 19, 21, 46, 191, DateTimeKind.Utc).AddTicks(4385));
 
                     b.HasKey("Id");
 
@@ -307,6 +408,13 @@ namespace basics.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("BirthDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -358,6 +466,17 @@ namespace basics.Migrations
                     b.Navigation("Salon");
                 });
 
+            modelBuilder.Entity("basics.Areas.Admin.Models.EtkinlikKategori", b =>
+                {
+                    b.HasOne("basics.Areas.Admin.Models.Etkinlik", "Etkinlik")
+                        .WithMany("Kategoriler")
+                        .HasForeignKey("EtkinlikId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Etkinlik");
+                });
+
             modelBuilder.Entity("basics.Areas.Admin.Models.EtkinlikKoltuk", b =>
                 {
                     b.HasOne("basics.Areas.Admin.Models.Etkinlik", "Etkinlik")
@@ -369,6 +488,23 @@ namespace basics.Migrations
                     b.Navigation("Etkinlik");
                 });
 
+            modelBuilder.Entity("basics.Areas.Admin.Models.KategoriBilet", b =>
+                {
+                    b.HasOne("basics.Areas.Admin.Models.EtkinlikKoltuk", "AtananKoltuk")
+                        .WithMany()
+                        .HasForeignKey("AtananKoltukId");
+
+                    b.HasOne("basics.Areas.Admin.Models.EtkinlikKategori", "EtkinlikKategori")
+                        .WithMany("SatilanBiletler")
+                        .HasForeignKey("EtkinlikKategoriId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AtananKoltuk");
+
+                    b.Navigation("EtkinlikKategori");
+                });
+
             modelBuilder.Entity("basics.Areas.Admin.Models.Salon", b =>
                 {
                     b.HasOne("basics.Areas.Admin.Models.SeatingPlan", "SeatingPlan")
@@ -376,6 +512,16 @@ namespace basics.Migrations
                         .HasForeignKey("SeatingPlanId");
 
                     b.Navigation("SeatingPlan");
+                });
+
+            modelBuilder.Entity("basics.Areas.Admin.Models.Etkinlik", b =>
+                {
+                    b.Navigation("Kategoriler");
+                });
+
+            modelBuilder.Entity("basics.Areas.Admin.Models.EtkinlikKategori", b =>
+                {
+                    b.Navigation("SatilanBiletler");
                 });
 #pragma warning restore 612, 618
         }

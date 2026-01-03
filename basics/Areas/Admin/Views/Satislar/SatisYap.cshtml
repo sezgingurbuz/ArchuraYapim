@@ -3,17 +3,37 @@
     ViewData["Title"] = "Bilet Satış - " + Model.EtkinlikAdi;
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     var biletler = ViewBag.Biletler as List<basics.Areas.Admin.Models.EtkinlikKoltuk>;
+    var toplamKategoriBilet = ViewBag.ToplamKategoriBilet as int? ?? 0;
+    var atanmamisKategoriBilet = ViewBag.AtanmamisKategoriBilet as int? ?? 0;
 }
 
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2><i class="fa-solid fa-ticket me-2"></i>Bilet Satış</h2>
-            <p class="text-muted mb-0">@Model.EtkinlikAdi - @Model.Salon?.SalonAdi</p>
+    <!-- GİŞE HEADER -->
+    <div class="card border-0 shadow-sm mb-4 bg-white">
+        <div class="card-body p-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <!-- Sol: Sidebar Toggle -->
+                <button class="btn btn-outline-dark border-0 p-2" onclick="toggleSidebar()" title="Menüyü Gizle/Göster">
+                    <i class="fa-solid fa-bars fa-2x"></i>
+                </button>
+                
+                <!-- Orta: Logo -->
+                <div class="text-center flex-grow-1">
+                    <div class="text-uppercase fw-bold text-primary ls-1" style="font-size: 1.2rem; letter-spacing: 2px;">Gişe Satış Ekranı</div>
+                </div>
+                
+                <!-- Sağ: Etkinlik Bilgisi ve Geri Dön -->
+                <div class="text-end">
+                    <h5 class="mb-0 text-dark fw-bold">@Model.EtkinlikAdi</h5>
+                    <div class="text-muted small">
+                        <i class="fa-solid fa-location-dot me-1"></i>@Model.Salon?.SalonAdi
+                    </div>
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm mt-2 rounded-pill px-3">
+                        <i class="fa-solid fa-arrow-left me-1"></i>Listeye Dön
+                    </a>
+                </div>
+            </div>
         </div>
-        <a asp-action="Index" class="btn btn-outline-secondary">
-            <i class="fa-solid fa-arrow-left me-2"></i>Geri Dön
-        </a>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
@@ -32,14 +52,93 @@
         </div>
     }
 
+    @* KATEGORİ BİLET BİLGİ KARTI *@
+    @if (Model.SatisTipi == "Kategori" && toplamKategoriBilet > 0)
+    {
+        <div class="alert @(atanmamisKategoriBilet > 0 ? "alert-warning" : "alert-success") mb-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="mb-1"><i class="fa-solid fa-tags me-2"></i>Kategori Bilet Durumu</h5>
+                    <p class="mb-0">
+                        <strong>@atanmamisKategoriBilet</strong> adet bilet koltuk ataması bekliyor
+                        (Toplam: @toplamKategoriBilet bilet satıldı)
+                    </p>
+                </div>
+                @if (atanmamisKategoriBilet > 0)
+                {
+                    <span class="badge bg-warning text-dark fs-5 px-3 py-2">
+                        <i class="fa-solid fa-clock me-1"></i>@atanmamisKategoriBilet Bekliyor
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-success fs-5 px-3 py-2">
+                        <i class="fa-solid fa-check me-1"></i>Tümü Atandı
+                    </span>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- REZERVASYON KODU ARAMA -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-warning text-dark py-3">
+            <h5 class="m-0"><i class="fa-solid fa-search me-2"></i>Rezervasyon Kodu ile Koltuk Atama</h5>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label fw-bold">Rezervasyon Kodu</label>
+                    <input type="text" id="rezervasyonKoduInput" class="form-control form-control-lg" 
+                           placeholder="Örn: RZV-ABC12345" style="text-transform: uppercase;" />
+                </div>
+                <div class="col-md-3">
+                    <button type="button" id="rezervasyonAraBtn" class="btn btn-warning btn-lg w-100">
+                        <i class="fa-solid fa-search me-2"></i>Ara
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <div id="rezervasyonSonuc" style="display: none;">
+                        <!-- AJAX sonucu buraya gelecek -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bulunan bilet bilgileri -->
+            <div id="biletBilgileri" class="mt-4" style="display: none;">
+                <div class="alert alert-success">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6><i class="fa-solid fa-user me-2"></i>Müşteri Bilgileri</h6>
+                            <p class="mb-1"><strong>Ad Soyad:</strong> <span id="musteriAdSoyad"></span></p>
+                            <p class="mb-1"><strong>Telefon:</strong> <span id="musteriTel"></span></p>
+                            <p class="mb-1"><strong>Kategori:</strong> <span id="kategoriAdi"></span></p>
+                            <p class="mb-0"><strong>Fiyat:</strong> <span id="biletFiyati"></span> ₺</p>
+                        </div>
+                        <div class="col-md-4 text-end d-flex align-items-center justify-content-end">
+                            <a id="koltukAtamaLink" href="#" class="btn btn-success btn-lg">
+                                <i class="fa-solid fa-chair me-2"></i>Koltuk Ata
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
     <div class="row">
         <!-- KOLTUK DÜZENİ (SOL) -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3">
+            <div class="card border-0 shadow-sm" id="seating-card">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="m-0"><i class="fa-solid fa-couch me-2"></i>Koltuk Seçimi</h5>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="fullscreenBtn" onclick="toggleFullscreen()">
+                        <i class="fa-solid fa-expand me-1"></i> <span>Tam Ekran</span>
+                    </button>
                 </div>
-                <div class="card-body bg-light text-center p-4">
+                <div class="card-body bg-light text-center p-4" id="seating-body">
                     <div id="seating-area">
                         <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Yükleniyor...</span>
@@ -50,7 +149,7 @@
                         SAHNE
                     </div>
 
-                    <div class="d-flex justify-content-center gap-4 mt-4">
+                    <div class="d-flex justify-content-center gap-4 mt-4 flex-wrap" id="legend-area">
                         <div class="d-flex align-items-center">
                             <div class="seat-legend bg-secondary me-2"></div> Boş
                         </div>
@@ -263,12 +362,87 @@
             gap: 5px !important;
         }
     }
+
+    /* Fullscreen Mode */
+    .fullscreen-mode {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 9999 !important;
+        background: #fff !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        overflow: auto !important;
+    }
+    
+    .fullscreen-mode .card-header {
+        position: sticky;
+        top: 0;
+        z-index: 10000;
+        background: #fff !important;
+    }
+    
+    .fullscreen-mode #seating-area {
+        height: calc(100vh - 200px) !important;
+        max-height: none !important;
+    }
+    
+    .fullscreen-mode #seating-body {
+        min-height: calc(100vh - 60px);
+    }
 </style>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
         var selectedSeats = [];
+        
+        // REZERVASYON KODU ARAMA
+        $('#rezervasyonAraBtn').click(function() {
+            var kod = $('#rezervasyonKoduInput').val().trim().toUpperCase();
+            
+            if (!kod) {
+                alert('Lütfen rezervasyon kodu girin.');
+                return;
+            }
+            
+            $.ajax({
+                url: '/Admin/Satislar/RezervasyonBul',
+                type: 'POST',
+                data: { rezervasyonKodu: kod },
+                success: function(response) {
+                    if (response.success) {
+                        var bilet = response.bilet;
+                        $('#musteriAdSoyad').text(bilet.musteriAdi + ' ' + bilet.musteriSoyadi);
+                        $('#musteriTel').text(bilet.musteriTelefon);
+                        $('#kategoriAdi').text(bilet.kategoriAdi);
+                        $('#biletFiyati').text(bilet.fiyat.toFixed(2));
+                        $('#koltukAtamaLink').attr('href', '/Admin/Satislar/KoltukAtama?biletId=' + bilet.id);
+                        
+                        $('#biletBilgileri').show();
+                        $('#rezervasyonSonuc').hide();
+                    } else {
+                        $('#biletBilgileri').hide();
+                        $('#rezervasyonSonuc').html('<div class="alert alert-danger mb-0">' + response.message + '</div>').show();
+                    }
+                },
+                error: function() {
+                    $('#rezervasyonSonuc').html('<div class="alert alert-danger mb-0">Bir hata oluştu.</div>').show();
+                }
+            });
+        });
+        
+        // Enter tuşu ile arama
+        $('#rezervasyonKoduInput').keypress(function(e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                $('#rezervasyonAraBtn').click();
+            }
+        });
         
         // Platform seçimi
         $('.platform-btn').click(function() {
@@ -510,4 +684,38 @@
         $('#seating-area').html('<div class="alert alert-danger m-3">Koltuk düzeni yüklenirken hata oluştu: ' + err.message + '</div>');
     }
     });
+</script>
+
+<script>
+// Fullscreen Toggle Fonksiyonu
+function toggleFullscreen() {
+    var card = document.getElementById('seating-card');
+    var btn = document.getElementById('fullscreenBtn');
+    var icon = btn.querySelector('i');
+    var text = btn.querySelector('span');
+    
+    card.classList.toggle('fullscreen-mode');
+    
+    if (card.classList.contains('fullscreen-mode')) {
+        icon.classList.remove('fa-expand');
+        icon.classList.add('fa-compress');
+        text.textContent = 'Küçült';
+        document.body.style.overflow = 'hidden';
+    } else {
+        icon.classList.remove('fa-compress');
+        icon.classList.add('fa-expand');
+        text.textContent = 'Tam Ekran';
+        document.body.style.overflow = '';
+    }
+}
+
+// ESC tuşu ile çıkış
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        var card = document.getElementById('seating-card');
+        if (card && card.classList.contains('fullscreen-mode')) {
+            toggleFullscreen();
+        }
+    }
+});
 </script>
