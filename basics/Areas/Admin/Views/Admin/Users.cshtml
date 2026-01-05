@@ -49,8 +49,8 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">Rol <span class="text-danger">*</span></label>
                             <select name="role" class="form-select" required>
-                                <option value="Berke">Berke</option>
-                                <option value="Okan">Okan</option>
+                                <option value="Berke">Satış ve Görüntüleme</option>
+                                <option value="Okan">Tam Yetki</option>
                                 <option value="Admin">Admin</option>
                             </select>
                         </div>
@@ -67,19 +67,74 @@
         </div>
     </div>
 
+    <!-- ŞİFRE DEĞİŞTİRME FORMU -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-warning text-dark py-3">
+            <h5 class="m-0"><i class="fa-solid fa-key me-2"></i>Şifre Değiştir</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="ChangePassword" method="post">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Kullanıcı <span class="text-danger">*</span></label>
+                            <select name="userId" class="form-select" required>
+                                <option value="">Seçiniz...</option>
+                                @foreach (var user in Model)
+                                {
+                                    <option value="@user.Id">@user.userName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Mevcut Şifre <span class="text-danger">*</span></label>
+                            <input type="password" name="currentPassword" class="form-control" required placeholder="Mevcut şifre" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Yeni Şifre <span class="text-danger">*</span></label>
+                            <input type="password" name="newPassword" class="form-control" required placeholder="En az 6 karakter" minlength="6" />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Şifre Tekrar <span class="text-danger">*</span></label>
+                            <input type="password" name="confirmPassword" class="form-control" required placeholder="Tekrar" minlength="6" />
+                        </div>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <div class="mb-3 w-100">
+                            <button type="submit" class="btn btn-warning w-100" onclick="return confirm('Seçili kullanıcının şifresini değiştirmek istediğinize emin misiniz?')">
+                                <i class="fa-solid fa-save"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-info py-2 mb-0 mt-2">
+                    <i class="fa-solid fa-info-circle me-2"></i>
+                    <small>Şifre değiştirmek için önce mevcut şifreyi doğru girmeniz gerekmektedir.</small>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- KULLANICI LİSTESİ -->
     <div class="card shadow-sm border-0">
         <div class="card-header bg-white py-3">
             <h5 class="m-0 text-muted"><i class="fa-solid fa-list me-2"></i>Mevcut Kullanıcılar</h5>
         </div>
         <div class="card-body p-0">
+            <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light">
                     <tr>
                         <th class="ps-4">ID</th>
                         <th>Kullanıcı Adı</th>
                         <th>Rol</th>
-                        <th>Şifre Hash</th>
+                        <th class="d-none d-md-table-cell">Şifre Hash</th>
                         <th class="text-end pe-4">İşlemler</th>
                     </tr>
                 </thead>
@@ -96,10 +151,10 @@
                                 </td>
                                 <td>
                                     <span class="badge @(user.Role == "Admin" ? "bg-danger" : user.Role == "Okan" ? "bg-warning" : "bg-secondary")">
-                                        @user.Role
+                                        @(user.Role == "Berke" ? "Satış ve Görüntüleme" : user.Role == "Okan" ? "Tam Yetki" : user.Role)
                                     </span>
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     <code class="text-muted">@user.passwordHash.Substring(0, Math.Min(50, user.passwordHash.Length))...</code>
                                 </td>
                                 <td class="text-end pe-4">
@@ -130,6 +185,7 @@
                     }
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 </div>

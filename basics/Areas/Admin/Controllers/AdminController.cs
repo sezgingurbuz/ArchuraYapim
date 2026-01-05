@@ -130,5 +130,53 @@ namespace basics.Areas.Admin.Controllers
             }
             return RedirectToAction("Users");
         }
+
+        // Şifre Değiştir
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ChangePassword(int userId, string currentPassword, string newPassword, string confirmPassword)
+        {
+            // Validasyon
+            if (string.IsNullOrEmpty(currentPassword) || string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
+            {
+                TempData["ErrorMessage"] = "Tüm şifre alanları doldurulmalıdır!";
+                return RedirectToAction("Users");
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                TempData["ErrorMessage"] = "Yeni şifre ve şifre tekrarı eşleşmiyor!";
+                return RedirectToAction("Users");
+            }
+
+            if (newPassword.Length < 6)
+            {
+                TempData["ErrorMessage"] = "Yeni şifre en az 6 karakter olmalıdır!";
+                return RedirectToAction("Users");
+            }
+
+            // Kullanıcıyı bul
+            var user = await _context.AdminUsers.FindAsync(userId);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Kullanıcı bulunamadı!";
+                return RedirectToAction("Users");
+            }
+
+            // Mevcut şifreyi kontrol et
+            if (!BCrypt.Net.BCrypt.Verify(currentPassword, user.passwordHash))
+            {
+                TempData["ErrorMessage"] = "Mevcut şifre yanlış!";
+                return RedirectToAction("Users");
+            }
+
+            // Yeni şifreyi hashle ve kaydet
+            user.passwordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            _context.AdminUsers.Update(user);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"'{user.userName}' kullanıcısının şifresi başarıyla değiştirildi.";
+            return RedirectToAction("Users");
+        }
     }
 }

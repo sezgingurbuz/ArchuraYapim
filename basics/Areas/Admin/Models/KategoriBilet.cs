@@ -19,24 +19,31 @@ namespace basics.Areas.Admin.Models
 
         // Benzersiz Rezervasyon Kodu (Gişede bu kod sorulacak)
         [Required]
+        [StringLength(20)]
         [Display(Name = "Rezervasyon Kodu")]
-        public string RezervasyonKodu { get; set; } // Örn: "RZV-ABC123"
+        public string RezervasyonKodu { get; set; } = string.Empty; // Örn: "RZV-ABC123"
 
         // Müşteri Bilgileri
         public int? UserId { get; set; } // Üye kullanıcı ise
 
-        [Required]
+        [Required(ErrorMessage = "Müşteri adı zorunludur")]
+        [StringLength(100, ErrorMessage = "Ad en fazla 100 karakter olabilir")]
         [Display(Name = "Müşteri Adı")]
-        public string MusteriAdi { get; set; }
+        public string MusteriAdi { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Müşteri soyadı zorunludur")]
+        [StringLength(100, ErrorMessage = "Soyad en fazla 100 karakter olabilir")]
         [Display(Name = "Müşteri Soyadı")]
-        public string MusteriSoyadi { get; set; }
+        public string MusteriSoyadi { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Telefon numarası zorunludur")]
+        [RegularExpression(@"^(\+90|0)?5[0-9]{9}$", ErrorMessage = "Geçerli bir cep telefonu numarası giriniz (5XX XXX XX XX)")]
+        [StringLength(15)]
         [Display(Name = "Telefon")]
-        public string MusteriTelefon { get; set; }
+        public string MusteriTelefon { get; set; } = string.Empty;
 
+        [EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi giriniz")]
+        [StringLength(255)]
         [Display(Name = "E-posta")]
         public string? MusteriEmail { get; set; }
 
@@ -44,12 +51,14 @@ namespace basics.Areas.Admin.Models
         [Required]
         public DateTime SatisTarihi { get; set; } = DateTime.Now;
 
-        [Required]
+        [Required(ErrorMessage = "Ödeme yöntemi zorunludur")]
+        [StringLength(50)]
         [Display(Name = "Ödeme Yöntemi")]
-        public string OdemeYontemi { get; set; } // Kredi Kartı, Havale vb.
+        public string OdemeYontemi { get; set; } = string.Empty; // Kredi Kartı, Havale vb.
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 100000, ErrorMessage = "Fiyat 0 ile 100.000 arasında olmalıdır")]
         [Display(Name = "Ödenen Fiyat")]
         public decimal OdenenFiyat { get; set; }
 

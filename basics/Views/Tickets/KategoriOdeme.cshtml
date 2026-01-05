@@ -231,22 +231,42 @@
                     <div class="col-md-6">
                         <label class="form-label">Ad *</label>
                         <input type="text" name="musteriAdi" class="form-control" 
-                               value="@ViewBag.KullaniciAdi" required />
+                               value="@ViewBag.KullaniciAdi" required 
+                               data-val="true" 
+                               data-val-required="Ad alanı zorunludur"
+                               data-val-maxlength="Ad en fazla 100 karakter olabilir"
+                               data-val-maxlength-max="100" />
+                        <span class="text-danger field-validation-valid" data-valmsg-for="musteriAdi" data-valmsg-replace="true"></span>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Soyad *</label>
                         <input type="text" name="musteriSoyadi" class="form-control" 
-                               value="@ViewBag.KullaniciSoyadi" required />
+                               value="@ViewBag.KullaniciSoyadi" required
+                               data-val="true" 
+                               data-val-required="Soyad alanı zorunludur"
+                               data-val-maxlength="Soyad en fazla 100 karakter olabilir"
+                               data-val-maxlength-max="100" />
+                        <span class="text-danger field-validation-valid" data-valmsg-for="musteriSoyadi" data-valmsg-replace="true"></span>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Telefon *</label>
                         <input type="tel" name="musteriTelefon" class="form-control" 
-                               value="@ViewBag.KullaniciTelefon" placeholder="05XX XXX XX XX" required />
+                               value="@ViewBag.KullaniciTelefon" placeholder="5XX XXX XX XX" required
+                               pattern="^(\\+90|0)?5[0-9]{9}$"
+                               title="Geçerli bir cep telefonu numarası giriniz (5XX XXX XX XX)"
+                               data-val="true" 
+                               data-val-required="Telefon numarası zorunludur"
+                               data-val-regex="Geçerli bir cep telefonu numarası giriniz (5XX XXX XX XX)"
+                               data-val-regex-pattern="^(\+90|0)?5[0-9]{9}$" />
+                        <span class="text-danger field-validation-valid" data-valmsg-for="musteriTelefon" data-valmsg-replace="true"></span>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">E-posta</label>
                         <input type="email" name="musteriEmail" class="form-control" 
-                               value="@ViewBag.KullaniciEmail" placeholder="ornek@email.com" />
+                               value="@ViewBag.KullaniciEmail" placeholder="ornek@email.com"
+                               data-val="true"
+                               data-val-email="Geçerli bir e-posta adresi giriniz" />
+                        <span class="text-danger field-validation-valid" data-valmsg-for="musteriEmail" data-valmsg-replace="true"></span>
                     </div>
                 </div>
             </div>

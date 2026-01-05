@@ -164,6 +164,7 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             padding: 8px 0;
             min-width: 180px;
+            z-index: 1100; /* Fiyat kartının üstünde görünsün */
         }
 
         .user-dropdown-menu .dropdown-item {
@@ -204,6 +205,16 @@
             .btn-login-nav,
             .user-dropdown-btn {
                 padding: 8px 12px;
+            }
+
+            /* Dropdown mobilde ekran içinde kalsın */
+            .user-dropdown-menu {
+                position: fixed !important;
+                top: 70px !important;
+                left: 10px !important;
+                right: 10px !important;
+                width: auto !important;
+                transform: none !important;
             }
         }
     </style>
@@ -305,6 +316,9 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
     
     <script>
         const toggleBtn = document.getElementById('theme-toggle');

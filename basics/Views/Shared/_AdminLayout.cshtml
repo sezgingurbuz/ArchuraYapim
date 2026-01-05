@@ -212,16 +212,36 @@
     <script>
         // Sidebar Toggle Fonksiyonu (Global)
         window.toggleSidebar = function() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-            document.getElementById('main-content').classList.toggle('collapsed');
+            var sidebar = document.getElementById('sidebar');
+            var mainContent = document.getElementById('main-content');
+            var isMobile = window.innerWidth <= 768;
             
-            // Mobil için active class kontrolü (ters mantık olabilir, kontrol edelim)
-            document.getElementById('sidebar').classList.toggle('active');
+            if (isMobile) {
+                // Mobilde sadece active class kullan
+                sidebar.classList.toggle('active');
+            } else {
+                // Masaüstünde collapsed class kullan
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('collapsed');
+            }
         };
 
         // Mobil toggle butonu
         document.getElementById('sidebarToggle').addEventListener('click', function() {
             window.toggleSidebar();
+        });
+        
+        // Mobilde sidebar dışına tıklayınca kapat
+        document.addEventListener('click', function(e) {
+            var sidebar = document.getElementById('sidebar');
+            var toggleBtn = document.getElementById('sidebarToggle');
+            var isMobile = window.innerWidth <= 768;
+            
+            if (isMobile && sidebar.classList.contains('active')) {
+                if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
+                    sidebar.classList.remove('active');
+                }
+            }
         });
     </script>
 

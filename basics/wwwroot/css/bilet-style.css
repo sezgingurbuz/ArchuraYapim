@@ -1174,7 +1174,7 @@
 /* Floating Price Card */
 .price-card-floating {
     position: fixed;
-    top: 100px;
+    top: 200px;
     right: 30px;
     width: 280px;
     background: #ffffff;

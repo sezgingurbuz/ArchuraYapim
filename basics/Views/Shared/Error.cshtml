@@ -1,25 +1,207 @@
-﻿@model ErrorViewModel
-@{
-    ViewData["Title"] = "Error";
+﻿@{
+    ViewData["Title"] = "Bir Hata Oluştu";
+    Layout = "_Layout";
+    var errorId = Context.Request.Query["errorId"].ToString();
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<style>
+    .error-page {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        background: var(--bg-color);
+    }
 
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
+    .error-container {
+        text-align: center;
+        max-width: 600px;
+    }
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+    .error-icon {
+        width: 180px;
+        height: 180px;
+        margin: 0 auto 30px;
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 15px 35px rgba(238, 90, 90, 0.3);
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .error-icon i {
+        font-size: 80px;
+        color: white;
+    }
+
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .error-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--heading-color);
+        margin-bottom: 15px;
+    }
+
+    .error-subtitle {
+        font-size: 1.2rem;
+        color: var(--text-color);
+        opacity: 0.8;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+
+    .error-id-box {
+        background: var(--card-bg);
+        border: 2px dashed var(--border-color);
+        border-radius: 12px;
+        padding: 15px 25px;
+        margin-bottom: 30px;
+        display: inline-block;
+    }
+
+    .error-id-label {
+        font-size: 0.85rem;
+        color: var(--text-color);
+        opacity: 0.7;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .error-id-code {
+        font-family: 'Courier New', monospace;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #ee5a5a;
+        letter-spacing: 2px;
+    }
+
+    .error-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-error {
+        padding: 14px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-primary-error {
+        background: linear-gradient(135deg, #c8af8b 0%, #a89068 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-primary-error:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(200, 175, 139, 0.4);
+        color: white;
+    }
+
+    .btn-secondary-error {
+        background: transparent;
+        color: var(--text-color);
+        border: 2px solid var(--border-color);
+    }
+
+    .btn-secondary-error:hover {
+        border-color: #c8af8b;
+        color: #c8af8b;
+    }
+
+    .help-section {
+        margin-top: 50px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .help-section h4 {
+        font-size: 1.1rem;
+        color: var(--heading-color);
+        margin-bottom: 15px;
+    }
+
+    .help-section p {
+        color: var(--text-color);
+        opacity: 0.8;
+        font-size: 0.95rem;
+    }
+
+    .help-section a {
+        color: #c8af8b;
+        text-decoration: none;
+    }
+
+    .help-section a:hover {
+        text-decoration: underline;
+    }
+
+    .whatsapp-link {
+        color: #25D366 !important;
+    }
+</style>
+
+<div class="error-page">
+    <div class="error-container">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        
+        <h1 class="error-title">Oops! Bir Şeyler Ters Gitti</h1>
+        <p class="error-subtitle">
+            İsteğinizi işlerken beklenmeyen bir hata oluştu. 
+            Teknik ekibimiz bu durumdan haberdar edildi.
+        </p>
+
+        @if (!string.IsNullOrEmpty(errorId))
+        {
+            <div class="error-id-box">
+                <span class="error-id-label">Hata Referans Kodu</span>
+                <span class="error-id-code">@errorId</span>
+            </div>
+        }
+
+        <div class="error-actions">
+            <a href="/" class="btn-error btn-primary-error">
+                <i class="fas fa-home"></i>
+                Ana Sayfaya Dön
+            </a>
+            <a href="javascript:history.back()" class="btn-error btn-secondary-error">
+                <i class="fas fa-arrow-left"></i>
+                Geri Git
+            </a>
+        </div>
+
+        <div class="help-section">
+            <h4><i class="fas fa-question-circle me-2"></i>Yardıma mı ihtiyacınız var?</h4>
+            <p>
+                Sorun devam ederse lütfen 
+                <a href="mailto:archurayapim@gmail.com">archurayapim@gmail.com</a> 
+                adresine e-posta gönderin veya 
+                <a href="https://wa.me/905395855858" class="whatsapp-link" target="_blank">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a> 
+                üzerinden bize ulaşın.
+                @if (!string.IsNullOrEmpty(errorId))
+                {
+                    <br /><small>Lütfen mesajınızda <strong>@errorId</strong> kodunu belirtiniz.</small>
+                }
+            </p>
+        </div>
+    </div>
+</div>

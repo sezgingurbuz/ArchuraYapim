@@ -89,25 +89,45 @@
                             <div class="form-group">
                                 <label>Ad <span class="required">*</span></label>
                                 <input type="text" name="musteriAdi" class="form-input"
-                                       value="@ViewBag.KullaniciAdi" placeholder="Adınız" required />
+                                       value="@ViewBag.KullaniciAdi" placeholder="Adınız" required
+                                       data-val="true" 
+                                       data-val-required="Ad alanı zorunludur"
+                                       data-val-maxlength="Ad en fazla 100 karakter olabilir"
+                                       data-val-maxlength-max="100" />
+                                <span class="text-danger field-validation-valid" data-valmsg-for="musteriAdi" data-valmsg-replace="true"></span>
                             </div>
                             <div class="form-group">
                                 <label>Soyad <span class="required">*</span></label>
                                 <input type="text" name="musteriSoyadi" class="form-input"
-                                       value="@ViewBag.KullaniciSoyadi" placeholder="Soyadınız" required />
+                                       value="@ViewBag.KullaniciSoyadi" placeholder="Soyadınız" required
+                                       data-val="true" 
+                                       data-val-required="Soyad alanı zorunludur"
+                                       data-val-maxlength="Soyad en fazla 100 karakter olabilir"
+                                       data-val-maxlength-max="100" />
+                                <span class="text-danger field-validation-valid" data-valmsg-for="musteriSoyadi" data-valmsg-replace="true"></span>
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label>Telefon <span class="required">*</span></label>
                             <input type="tel" name="musteriTelefon" class="form-input"
-                                   value="@ViewBag.KullaniciTelefon" placeholder="05XX XXX XX XX" required />
+                                   value="@ViewBag.KullaniciTelefon" placeholder="5XX XXX XX XX" required
+                                   pattern="^(\+90|0)?5[0-9]{9}$"
+                                   title="Geçerli bir cep telefonu numarası giriniz (5XX XXX XX XX)"
+                                   data-val="true" 
+                                   data-val-required="Telefon numarası zorunludur"
+                                   data-val-regex="Geçerli bir cep telefonu numarası giriniz (5XX XXX XX XX)"
+                                   data-val-regex-pattern="^(\+90|0)?5[0-9]{9}$" />
+                            <span class="text-danger field-validation-valid" data-valmsg-for="musteriTelefon" data-valmsg-replace="true"></span>
                         </div>
 
                         <div class="form-group">
                             <label>E-posta</label>
                             <input type="email" name="musteriEmail" class="form-input"
-                                   value="@ViewBag.KullaniciEmail" placeholder="ornek@email.com" />
+                                   value="@ViewBag.KullaniciEmail" placeholder="ornek@email.com"
+                                   data-val="true"
+                                   data-val-email="Geçerli bir e-posta adresi giriniz" />
+                            <span class="text-danger field-validation-valid" data-valmsg-for="musteriEmail" data-valmsg-replace="true"></span>
                             <small>Biletleriniz bu e-posta adresine gönderilecektir.</small>
                         </div>
                     </div>
@@ -235,10 +255,6 @@
                 <div class="security-item">
                     <i class="fas fa-lock"></i>
                     <span>SSL Şifreli Güvenli Ödeme</span>
-                </div>
-                <div class="security-item">
-                    <i class="fas fa-undo"></i>
-                    <span>7 Gün İçinde İade Garantisi</span>
                 </div>
                 <div class="security-item">
                     <i class="fas fa-headset"></i>

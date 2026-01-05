@@ -249,23 +249,42 @@
         else
         {
             <!-- KOLTUK SATIŞI (Mevcut davranış) -->
-            <!-- Legend Bar -->
+            <!-- Legend Bar with Zoom Controls -->
             <div class="legend-bar">
-                <div class="legend-item">
-                    <div class="legend-box selected"></div>
-                    <span>Seçilen</span>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-box selected"></div>
+                        <span>Seçilen</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box sold"></div>
+                        <span>Dolu</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box empty"></div>
+                        <span>Boş</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box decorative"></div>
+                        <span>Kayıt Dışı</span>
+                    </div>
                 </div>
-                <div class="legend-item">
-                    <div class="legend-box sold"></div>
-                    <span>Dolu</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-box empty"></div>
-                    <span>Boş</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-box decorative"></div>
-                    <span>Kayıt Dışı</span>
+                
+                <!-- Zoom Controls -->
+                <div class="zoom-controls">
+                    <button type="button" class="zoom-btn" id="zoomOut" title="Uzaklaştır">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <span class="zoom-level" id="zoomLevel">100%</span>
+                    <button type="button" class="zoom-btn" id="zoomIn" title="Yakınlaştır">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button type="button" class="zoom-btn zoom-fit" id="zoomFit" title="Ekrana Sığdır">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </button>
+                    <button type="button" class="zoom-btn" id="zoomReset" title="Sıfırla">
+                        <i class="fas fa-undo"></i>
+                    </button>
                 </div>
             </div>
 
@@ -313,16 +332,143 @@
                 </div>
             </div>
 
-            <!-- Seating Area - Full Screen -->
-            <div class="seating-wrapper">
-                <div id="seating-area" class="seating-area-fullscreen">
-                    <div class="loading-spinner">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <span>Koltuklar yükleniyor...</span>
+            <!-- Seating Area - Full Screen with Zoom Support -->
+            <div class="seating-wrapper" id="seatingWrapper">
+                <div class="seating-zoom-container" id="seatingZoomContainer">
+                    <div id="seating-area" class="seating-area-fullscreen">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Koltuklar yükleniyor...</span>
+                        </div>
                     </div>
                 </div>
                 <div class="stage-bottom">SAHNE</div>
             </div>
+
+            <style>
+                /* Zoom Controls */
+                .legend-bar {
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: flex-start;
+                    align-items: center;
+                    gap: 15px;
+                    padding: 12px 20px;
+                    padding-right: 280px; /* Fiyat kartı için boşluk */
+                    background: var(--card-bg, #fff);
+                    border-radius: 12px;
+                    margin-bottom: 15px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                }
+                
+                .legend-items {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 15px;
+                }
+                
+                .zoom-controls {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    background: var(--bg-color, #f5f5f5);
+                    padding: 6px 12px;
+                    border-radius: 25px;
+                }
+                
+                .zoom-btn {
+                    width: 36px;
+                    height: 36px;
+                    border: none;
+                    border-radius: 50%;
+                    background: var(--card-bg, #fff);
+                    color: var(--text-color, #333);
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.2s ease;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                }
+                
+                .zoom-btn:hover {
+                    background: #c8af8b;
+                    color: white;
+                    transform: scale(1.1);
+                }
+                
+                .zoom-btn:active {
+                    transform: scale(0.95);
+                }
+                
+                .zoom-btn.zoom-fit {
+                    background: linear-gradient(135deg, #28a745, #20c997);
+                    color: white;
+                }
+                
+                .zoom-btn.zoom-fit:hover {
+                    background: linear-gradient(135deg, #20c997, #28a745);
+                }
+                
+                .zoom-level {
+                    font-weight: 700;
+                    font-size: 0.9rem;
+                    min-width: 50px;
+                    text-align: center;
+                    color: var(--text-color, #333);
+                }
+                
+                /* Seating Zoom Container */
+                .seating-wrapper {
+                    position: relative;
+                    overflow: hidden;
+                    border-radius: 12px;
+                    background: #111827;
+                }
+                
+                .seating-zoom-container {
+                    overflow: auto;
+                    max-height: 70vh;
+                    min-height: 400px;
+                    touch-action: pan-x pan-y;
+                    -webkit-overflow-scrolling: touch;
+                    padding: 10px;
+                }
+                
+                #seating-area {
+                    /* Dinamik boyutlandırma JS tarafından yapılıyor */
+                    border-radius: 8px;
+                }
+                
+                /* Mobile optimizations */
+                @@media (max-width: 768px) {
+                    .legend-bar {
+                        flex-direction: column;
+                        padding: 10px 15px;
+                        padding-right: 15px; /* Mobilde sağ padding'i sıfırla */
+                    }
+                    
+                    .zoom-controls {
+                        width: 100%;
+                        justify-content: center;
+                    }
+                    
+                    .zoom-btn {
+                        width: 44px;
+                        height: 44px;
+                        font-size: 1.1rem;
+                    }
+                    
+                    .seating-zoom-container {
+                        max-height: 55vh;
+                        min-height: 300px;
+                    }
+                    
+                    .legend-items {
+                        justify-content: center;
+                    }
+                }
+            </style>
         }
     </div>
 </div>
@@ -421,31 +567,33 @@
             }
         }
         
-        // --- Absolute Positioning Render Logic ---
+        // --- Zoom ve Koltuk Render Logic ---
+        var BASE_SEAT_SIZE = 40;  // Varsayılan koltuk boyutu
+        var currentZoom = 1;
+        var minZoom = 0.4;
+        var maxZoom = 1.5;
+        var zoomStep = 0.1;
+        
+        // Plan verilerini global olarak sakla
+        var planJson = null;
+        var tickets = [];
+        var minX = 0, minY = 0, maxX = 800, maxY = 600;
+        
         try {
-            var SEAT_SIZE = 40; 
-            
             // Backend'den gelen veri string ise parse et
             var rawPlan = @Html.Raw(Model.Salon?.SeatingPlan?.PlanJson ?? "{}");
-            var planJson = typeof rawPlan === 'string' ? JSON.parse(rawPlan) : rawPlan;
+            planJson = typeof rawPlan === 'string' ? JSON.parse(rawPlan) : rawPlan;
             
             var rawTickets = @Html.Raw(Json.Serialize(biletler?.Select(b => new { b.KoltukNo, b.DoluMu })));
-            var tickets = rawTickets || [];
-
-            var seatingArea = $('#seating-area');
-            seatingArea.empty();
+            tickets = rawTickets || [];
             
-            if (!planJson || !planJson.koltuklar || planJson.koltuklar.length === 0) {
-                seatingArea.html('<p class="no-seats">Koltuk düzeni bulunamadı.</p>');
-                return;
-            } else {
-                // Canvas boyutunu hesapla
-                let maxX = -Infinity;
-                let maxY = -Infinity;
-                let minX = Infinity;
-                let minY = Infinity;
+            if (planJson && planJson.koltuklar && planJson.koltuklar.length > 0) {
+                // Koordinat sınırlarını hesapla
+                maxX = -Infinity;
+                maxY = -Infinity;
+                minX = Infinity;
+                minY = Infinity;
 
-                // Koordinatları güvenli şekilde hesapla
                 planJson.koltuklar.forEach(s => {
                     const x = parseFloat(s.x);
                     const y = parseFloat(s.y);
@@ -459,125 +607,210 @@
                     }
                 });
 
-                // Sahne koordinatlarını da hesaba kat
-                if (planJson.sahne) {
-                    const sX = parseFloat(planJson.sahne.x);
-                    const sY = parseFloat(planJson.sahne.y);
-                    const sW = parseFloat(planJson.sahne.width);
-                    const sH = parseFloat(planJson.sahne.height);
-                    
-                    if (!isNaN(sX) && !isNaN(sY)) {
-                        if (sX < minX) minX = sX;
-                        if (sY < minY) minY = sY;
-                        if (sX + sW > maxX) maxX = sX + sW;
-                        if (sY + sH > maxY) maxY = sY + sH;
-                    }
-                }
-
-                // Eğer geçerli koordinat yoksa varsayılan ata
                 if (minX === Infinity) minX = 0;
                 if (minY === Infinity) minY = 0;
                 if (maxX === -Infinity) maxX = 800;
                 if (maxY === -Infinity) maxY = 600;
-
-                // Offset (Padding) ekle
-                const PADDING = 50;
-                const exactWidth = maxX - minX + SEAT_SIZE + (PADDING * 2);
-                const exactHeight = maxY - minY + SEAT_SIZE + (PADDING * 2);
-                
-                // Scrollable Area Settings
-                seatingArea.css({
-                    'position': 'relative',
-                    'width': '100%',
-                    'min-height': '500px',
-                    'height': 'auto',
-                    'overflow': 'auto',
-                    'background-color': '#111827',
-                    'border-radius': '8px',
-                    'display': 'flex',
-                    'align-items': 'center',
-                    'justify-content': 'center'
-                });
-
-                // Inner Canvas
-                var canvas = $('<div>').css({
-                    'position': 'relative',
-                    'width': exactWidth + 'px',
-                    'height': exactHeight + 'px',
-                    'min-width': exactWidth + 'px',
-                    'margin': 'auto'
-                });
-                seatingArea.append(canvas);
-
-                // Render Loop
-                planJson.koltuklar.forEach(function(seat) {
-                    var seatId = seat.blok + '-' + seat.sira + seat.numara;
-                    var ticket = tickets.find(t => t.koltukNo === seatId);
-                    var isSold = ticket && ticket.doluMu;
-                    var isDecorative = seat.isDecorative === true;
-
-                    // X ve Y değerlerini offsetle
-                    var seatX = parseFloat(seat.x);
-                    var seatY = parseFloat(seat.y);
-                    
-                    // Eğer koordinat yoksa (eski veri), pas geç veya varsayılan yerleştir
-                    if (isNaN(seatX) || isNaN(seatY)) return;
-
-                    var posX = seatX - minX + PADDING;
-                    var posY = seatY - minY + PADDING;
-
-                    var displayText = seat.sira + seat.numara;
-                    var fontSize = '0.7rem';
-                    if((displayText + "").length > 3) fontSize = '0.6rem';
-                    if((displayText + "").length > 4) fontSize = '0.5rem';
-
-                    var seatEl = $('<div>')
-                        .addClass('seat')
-                        .text(displayText)
-                        .attr('data-seat', seatId)
-                        .attr('title', isDecorative ? seat.sira + seat.numara + ' (Kayıt Dışı)' : 'Koltuk: ' + seatId)
-                        .css({
-                            'position': 'absolute',
-                            'left': posX + 'px',
-                            'top': posY + 'px',
-                            'width': SEAT_SIZE + 'px',
-                            'height': SEAT_SIZE + 'px',
-                            'display': 'flex',
-                            'align-items': 'center',
-                            'justify-content': 'center',
-                            'font-size': fontSize,
-                            'line-height': '1'
-                        });
-                    
-                    if (isDecorative) {
-                        seatEl.addClass('decorative');
-                    } else if (isSold) {
-                        seatEl.addClass('sold');
-                    } else {
-                        seatEl.addClass('empty');
-                        seatEl.click(function() {
-                            var seatNo = $(this).attr('data-seat');
-                            
-                            if ($(this).hasClass('selected')) {
-                                $(this).removeClass('selected').addClass('empty');
-                                selectedSeats = selectedSeats.filter(s => s !== seatNo);
-                            } else {
-                                $(this).removeClass('empty').addClass('selected');
-                                selectedSeats.push(seatNo);
-                            }
-                            
-                            updateUI();
-                        });
-                    }
-                    
-                    canvas.append(seatEl);
-                });
-
             }
         } catch (err) {
-            console.error("Seating render error:", err);
-            $('#seating-area').html('<div class="alert alert-danger">Koltuk düzeni yüklenirken hata oluştu: ' + err.message + '</div>');
+            console.error("Plan parse error:", err);
         }
+        
+        // Koltukları render et (zoom seviyesine göre)
+        function renderSeats() {
+            var seatingArea = $('#seating-area');
+            seatingArea.empty();
+            
+            if (!planJson || !planJson.koltuklar || planJson.koltuklar.length === 0) {
+                seatingArea.html('<p class="no-seats">Koltuk düzeni bulunamadı.</p>');
+                return;
+            }
+            
+            var SEAT_SIZE = Math.round(BASE_SEAT_SIZE * currentZoom);
+            var PADDING = Math.round(30 * currentZoom);
+            
+            // Canvas boyutunu zoom'a göre hesapla
+            var scaleRatio = SEAT_SIZE / 40; // Orijinal 40px'e göre oran
+            var exactWidth = (maxX - minX) * scaleRatio + SEAT_SIZE + (PADDING * 2);
+            var exactHeight = (maxY - minY) * scaleRatio + SEAT_SIZE + (PADDING * 2);
+            
+            // Scrollable Area Settings
+            seatingArea.css({
+                'position': 'relative',
+                'width': exactWidth + 'px',
+                'height': exactHeight + 'px',
+                'min-width': exactWidth + 'px',
+                'min-height': exactHeight + 'px',
+                'background-color': '#111827',
+                'margin': '0 auto'
+            });
+
+            // Render Loop
+            planJson.koltuklar.forEach(function(seat) {
+                var seatId = seat.blok + '-' + seat.sira + seat.numara;
+                var ticket = tickets.find(t => t.koltukNo === seatId);
+                var isSold = ticket && ticket.doluMu;
+                var isDecorative = seat.isDecorative === true;
+
+                var seatX = parseFloat(seat.x);
+                var seatY = parseFloat(seat.y);
+                
+                if (isNaN(seatX) || isNaN(seatY)) return;
+
+                // Pozisyonu zoom'a göre ayarla
+                var posX = (seatX - minX) * scaleRatio + PADDING;
+                var posY = (seatY - minY) * scaleRatio + PADDING;
+
+                var displayText = seat.sira + seat.numara;
+                
+                // Font boyutunu zoom'a göre ayarla
+                var baseFontSize = 11;
+                if((displayText + "").length > 3) baseFontSize = 9;
+                if((displayText + "").length > 4) baseFontSize = 8;
+                var fontSize = Math.max(6, Math.round(baseFontSize * currentZoom)) + 'px';
+
+                var seatEl = $('<div>')
+                    .addClass('seat')
+                    .text(displayText)
+                    .attr('data-seat', seatId)
+                    .attr('title', isDecorative ? seat.sira + seat.numara + ' (Kayıt Dışı)' : 'Koltuk: ' + seatId)
+                    .css({
+                        'position': 'absolute',
+                        'left': posX + 'px',
+                        'top': posY + 'px',
+                        'width': SEAT_SIZE + 'px',
+                        'height': SEAT_SIZE + 'px',
+                        'display': 'flex',
+                        'align-items': 'center',
+                        'justify-content': 'center',
+                        'font-size': fontSize,
+                        'line-height': '1'
+                    });
+                
+                // Seçili koltukları koru
+                if (selectedSeats.includes(seatId)) {
+                    seatEl.addClass('selected');
+                } else if (isDecorative) {
+                    seatEl.addClass('decorative');
+                } else if (isSold) {
+                    seatEl.addClass('sold');
+                } else {
+                    seatEl.addClass('empty');
+                }
+                
+                // Tıklanabilir koltuklar için event
+                if (!isDecorative && !isSold) {
+                    seatEl.click(function() {
+                        var seatNo = $(this).attr('data-seat');
+                        
+                        if ($(this).hasClass('selected')) {
+                            $(this).removeClass('selected').addClass('empty');
+                            selectedSeats = selectedSeats.filter(s => s !== seatNo);
+                        } else {
+                            $(this).removeClass('empty').addClass('selected');
+                            selectedSeats.push(seatNo);
+                        }
+                        
+                        updateUI();
+                    });
+                }
+                
+                seatingArea.append(seatEl);
+            });
+        }
+        
+        // Zoom level göster
+        function updateZoomDisplay() {
+            $('#zoomLevel').text(Math.round(currentZoom * 100) + '%');
+        }
+        
+        // Zoom işlemleri
+        function zoomIn() {
+            if (currentZoom < maxZoom) {
+                currentZoom = Math.min(currentZoom + zoomStep, maxZoom);
+                updateZoomDisplay();
+                renderSeats();
+            }
+        }
+        
+        function zoomOut() {
+            if (currentZoom > minZoom) {
+                currentZoom = Math.max(currentZoom - zoomStep, minZoom);
+                updateZoomDisplay();
+                renderSeats();
+            }
+        }
+        
+        function zoomReset() {
+            currentZoom = 1;
+            updateZoomDisplay();
+            renderSeats();
+        }
+        
+        function zoomFitToScreen() {
+            var container = $('#seatingZoomContainer');
+            var containerWidth = container.width();
+            var containerHeight = container.height();
+            
+            // Orijinal boyutları hesapla
+            var originalWidth = (maxX - minX) + BASE_SEAT_SIZE + 60;
+            var originalHeight = (maxY - minY) + BASE_SEAT_SIZE + 60;
+            
+            // En uygun zoom seviyesini hesapla
+            var zoomX = containerWidth / originalWidth;
+            var zoomY = containerHeight / originalHeight;
+            
+            currentZoom = Math.min(zoomX, zoomY) * 0.95;
+            currentZoom = Math.max(currentZoom, minZoom);
+            currentZoom = Math.min(currentZoom, maxZoom);
+            
+            updateZoomDisplay();
+            renderSeats();
+        }
+        
+        // İlk render
+        renderSeats();
+        
+        // Zoom button event handlers
+        $('#zoomIn').click(zoomIn);
+        $('#zoomOut').click(zoomOut);
+        $('#zoomReset').click(zoomReset);
+        $('#zoomFit').click(zoomFitToScreen);
+        
+        // Keyboard shortcuts
+        $(document).on('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '=')) {
+                e.preventDefault();
+                zoomIn();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+                e.preventDefault();
+                zoomOut();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+                e.preventDefault();
+                zoomReset();
+            }
+        });
+        
+        // Mouse wheel zoom
+        $('#seatingZoomContainer').on('wheel', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                if (e.originalEvent.deltaY < 0) {
+                    zoomIn();
+                } else {
+                    zoomOut();
+                }
+            }
+        });
+        
+        // Mobil için: Sayfa yüklendikten sonra otomatik sığdır
+        setTimeout(function() {
+            if ($(window).width() <= 768) {
+                zoomFitToScreen();
+            }
+        }, 300);
     });
 
     // Login Popup Functions
