@@ -13,6 +13,10 @@ namespace basics.Areas.Admin.Models
         public int ToplamSatilanBilet { get; set; }
         public decimal ToplamHasilat { get; set; }
         
+        // Bugünkü İstatistikler
+        public int BugunSatilanBilet { get; set; }
+        public decimal BugunHasilat { get; set; }
+        
         // Yaklaşan Etkinlikler
         public List<YakinEtkinlik> YakinEtkinlikler { get; set; } = new List<YakinEtkinlik>();
         

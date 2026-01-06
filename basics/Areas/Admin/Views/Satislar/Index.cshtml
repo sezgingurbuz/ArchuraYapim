@@ -5,80 +5,346 @@
     var sehirler = ViewBag.Sehirler as List<string>;
 }
 
-<div class="container py-5">
-    
-    <style>
-        .filters-section { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #e9ecef; }
-        .filters-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .filter-controls { display: flex; gap: 20px; flex-wrap: wrap; }
-        .filter-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 5px; }
-        .filter-group label { font-size: 0.85rem; font-weight: 600; color: #6c757d; }
-        .filter-group input, .filter-group select { padding: 8px 12px; border: 1px solid #ced4da; border-radius: 6px; }
-        .btn-view { background: none; border: none; color: #0d6efd; font-size: 0.9rem; cursor: pointer; text-decoration: underline; }
-    </style>
+<style>
+    /* Modern Satış Sayfası Stilleri */
+    .page-header {
+        background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        color: white;
+    }
+    .page-header h2 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    .page-header p {
+        opacity: 0.8;
+        margin-bottom: 0;
+    }
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fa-solid fa-cash-register me-2"></i>Bilet Satış</h2>
+    .filters-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: none;
+    }
+    .filters-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .filters-header h5 {
+        font-weight: 600;
+        color: #1a1f2e;
+        margin: 0;
+    }
+    .filter-controls {
+        display: flex;
+        gap: 1.25rem;
+        flex-wrap: wrap;
+    }
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+    .filter-group label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    .filter-group input,
+    .filter-group select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+    .filter-group input:focus,
+    .filter-group select:focus {
+        border-color: #0d6efd;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    }
+    .btn-clear-filter {
+        background: #f8f9fa;
+        border: none;
+        color: #6c757d;
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-clear-filter:hover {
+        background: #e9ecef;
+        color: #0d6efd;
+    }
+
+    /* Tablo Kartı */
+    .table-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        overflow: hidden;
+        border: none;
+    }
+    .table-card .card-header {
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+        padding: 1.25rem 1.5rem;
+    }
+    .table-card .card-header h5 {
+        font-weight: 600;
+        color: #1a1f2e;
+        margin: 0;
+    }
+
+    /* Modern Tablo */
+    .modern-table {
+        margin-bottom: 0;
+    }
+    .modern-table thead {
+        background: #f8f9fa;
+    }
+    .modern-table thead th {
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        padding: 1rem 1.25rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    .modern-table tbody tr {
+        transition: all 0.2s;
+    }
+    .modern-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+    .modern-table tbody td {
+        padding: 1rem 1.25rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .modern-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Etkinlik Satırı */
+    .etkinlik-name {
+        font-weight: 600;
+        color: #1a1f2e;
+        font-size: 1rem;
+    }
+    .etkinlik-tur {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+    .salon-info {
+        font-weight: 500;
+        color: #495057;
+    }
+    .salon-city {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    .date-main {
+        font-weight: 600;
+        color: #1a1f2e;
+    }
+    .date-time {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    /* Durum Badges */
+    .status-badge {
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .status-active {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+    }
+    .status-inactive {
+        background: #e9ecef;
+        color: #6c757d;
+    }
+
+    /* Satış Butonu */
+    .btn-satis {
+        background: linear-gradient(135deg, #198754 0%, #157347 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1.25rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+    }
+    .btn-satis:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(25, 135, 84, 0.4);
+        color: white;
+    }
+    .btn-disabled {
+        background: #e9ecef;
+        color: #6c757d;
+        padding: 0.5rem 1.25rem;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        cursor: not-allowed;
+        border: none;
+    }
+
+    /* Pagination */
+    .pagination-wrapper {
+        padding: 1.25rem;
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+    }
+    .pagination .page-link {
+        border: none;
+        padding: 0.6rem 1rem;
+        margin: 0 0.2rem;
+        border-radius: 8px;
+        color: #495057;
+        font-weight: 500;
+    }
+    .pagination .page-item.active .page-link {
+        background: #0d6efd;
+        color: white;
+    }
+    .pagination .page-link:hover {
+        background: #e9ecef;
+    }
+
+    /* Alert */
+    .alert-modern {
+        border-radius: 12px;
+        border: none;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Checkbox Stili */
+    .form-check-input {
+        width: 1.1rem;
+        height: 1.1rem;
+        margin-top: 0.15rem;
+    }
+    .form-check-label {
+        font-weight: 500;
+        color: #495057;
+        font-size: 0.9rem;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+        .filter-group {
+            min-width: 100%;
+        }
+    }
+</style>
+
+<div class="container-fluid py-4">
+    
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h2><i class="fa-solid fa-cash-register me-2"></i>Bilet Satış</h2>
+                <p>Etkinlik seçerek bilet satışı yapabilirsiniz</p>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-light text-dark px-3 py-2 rounded-pill">
+                    <i class="fa-solid fa-calendar me-1"></i>@DateTime.Now.ToString("dd MMMM yyyy")
+                </span>
+            </div>
+        </div>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success">
+        <div class="alert alert-success alert-modern">
             <i class="fa-solid fa-check-circle me-2"></i>@TempData["SuccessMessage"]
         </div>
     }
 
-    <!-- ETKİNLİKLER LİSTESİ -->
-    <div class="card mt-5 shadow-sm border-0">
-        <div class="filters-section mx-3 mt-3">
-            <div class="filters-header">
-                <h5 class="m-0 text-muted"><i class="fa-solid fa-filter me-2"></i>Filtrele ve Ara</h5>
-                <button class="btn-view" onclick="resetFilters()">Filtreleri Temizle</button>
+    <!-- FİLTRELER -->
+    <div class="filters-card">
+        <div class="filters-header">
+            <h5><i class="fa-solid fa-filter me-2 text-primary"></i>Filtrele ve Ara</h5>
+            <button class="btn-clear-filter" onclick="resetFilters()">
+                <i class="fa-solid fa-times me-1"></i>Temizle
+            </button>
+        </div>
+        <div class="filter-controls">
+            <div class="filter-group">
+                <label>Etkinlik Ara</label>
+                <input type="text" id="searchInput" placeholder="Etkinlik adı yazın..." onkeyup="applyFilters()">
             </div>
-            <div class="filter-controls">
-                <div class="filter-group">
-                    <label>Etkinlik Ara</label>
-                    <input type="text" id="searchInput" placeholder="Etkinlik adı..." onkeyup="applyFilters()">
-                </div>
-                <div class="filter-group">
-                    <label>Şehir Filtrele</label>
-                    <select id="cityFilter" onchange="applyFilters()">
-                        <option value="">Tümü</option>
-                        @if (sehirler != null)
+            <div class="filter-group">
+                <label>Şehir</label>
+                <select id="cityFilter" onchange="applyFilters()">
+                    <option value="">Tüm Şehirler</option>
+                    @if (sehirler != null)
+                    {
+                        foreach (var sehir in sehirler)
                         {
-                            foreach (var sehir in sehirler)
-                            {
-                                <option value="@sehir">@sehir</option>
-                            }
+                            <option value="@sehir">@sehir</option>
                         }
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>&nbsp;</label>
-                    <div class="form-check" style="padding-top: 8px;">
-                        <input class="form-check-input" type="checkbox" id="satisaAcikFilter" onchange="applyFilters()">
-                        <label class="form-check-label" for="satisaAcikFilter" style="font-weight: normal; color: #212529;">
-                            Sadece Satışa Açık Etkinlikler
-                        </label>
-                    </div>
+                    }
+                </select>
+            </div>
+            <div class="filter-group" style="display: flex; align-items: flex-end;">
+                <div class="form-check" style="padding-bottom: 0.5rem;">
+                    <input class="form-check-input" type="checkbox" id="satisaAcikFilter" onchange="applyFilters()">
+                    <label class="form-check-label" for="satisaAcikFilter">
+                        Sadece Satışa Açık
+                    </label>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="card-header bg-white py-3 border-top">
-            <h5 class="m-0 text-muted"><i class="fa-solid fa-list me-2"></i>Mevcut Etkinlikler</h5>
+    <!-- ETKİNLİKLER TABLOSU -->
+    <div class="table-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5><i class="fa-solid fa-list me-2 text-success"></i>Mevcut Etkinlikler</h5>
+            <span class="badge bg-primary rounded-pill px-3">@Model?.Count() Etkinlik</span>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
+        <div class="table-responsive">
+            <table class="table modern-table" id="eventsTable">
+                <thead>
                     <tr>
-                        <th class="ps-4">Etkinlik Adı</th>
+                        <th>Etkinlik Adı</th>
                         <th class="d-none d-md-table-cell">Tür</th>
-                        <th>Salon (Şehir)</th>
+                        <th>Salon</th>
                         <th>Tarih & Saat</th>
                         <th>Durum</th>
-                        <th class="text-end pe-4">İşlemler</th>
+                        <th class="text-end">İşlem</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -87,38 +353,47 @@
                         @foreach (var etkinlik in Model)
                         {
                             <tr data-satis-aktif="@etkinlik.SatisAktifMi.ToString().ToLower()">
-                                <td class="ps-4 fw-bold">@etkinlik.EtkinlikAdi</td>
-                                <td class="d-none d-md-table-cell"><span class="badge bg-secondary">@etkinlik.Tur</span></td>
-                                <td>@etkinlik.Salon?.SalonAdi (@etkinlik.Salon?.Sehir)</td>
                                 <td>
-                                    <div>@etkinlik.TarihSaat.ToString("dd.MM.yyyy")</div>
-                                    <small class="text-muted">@etkinlik.TarihSaat.ToString("HH:mm")</small>
+                                    <div class="etkinlik-name">@etkinlik.EtkinlikAdi</div>
+                                </td>
+                                <td class="d-none d-md-table-cell">
+                                    <span class="etkinlik-tur bg-secondary text-white">@etkinlik.Tur</span>
+                                </td>
+                                <td>
+                                    <div class="salon-info">@etkinlik.Salon?.SalonAdi</div>
+                                    <div class="salon-city"><i class="fa-solid fa-location-dot me-1"></i>@etkinlik.Salon?.Sehir</div>
+                                </td>
+                                <td>
+                                    <div class="date-main">@etkinlik.TarihSaat.ToString("dd MMM yyyy")</div>
+                                    <div class="date-time"><i class="fa-regular fa-clock me-1"></i>@etkinlik.TarihSaat.ToString("HH:mm")</div>
                                 </td>
                                 <td>
                                     @if(etkinlik.SatisAktifMi)
                                     {
-                                         <span class="badge bg-success">Satışta</span>
+                                        <span class="status-badge status-active">
+                                            <i class="fa-solid fa-circle me-1" style="font-size: 0.5rem;"></i>Satışta
+                                        </span>
                                     }
                                     else
                                     {
-                                         <span class="badge bg-secondary">Satışa Kapalı</span>
+                                        <span class="status-badge status-inactive">
+                                            <i class="fa-solid fa-pause me-1"></i>Kapalı
+                                        </span>
                                     }
                                 </td>
-                                <td class="text-end pe-4">
-                                    <div class="btn-group">
-                                        @if(etkinlik.SatisAktifMi)
-                                        {
-                                            <a asp-action="SatisYap" asp-route-id="@etkinlik.Id" class="btn btn-primary btn-sm" title="Satış Yap">
-                                                <i class="fa-solid fa-ticket me-1"></i>Satış Yap
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            <button class="btn btn-secondary btn-sm" disabled title="Satış Kapalı">
-                                                <i class="fa-solid fa-ban me-1"></i>Satış Kapalı
-                                            </button>
-                                        }
-                                    </div>
+                                <td class="text-end">
+                                    @if(etkinlik.SatisAktifMi)
+                                    {
+                                        <a asp-action="SatisYap" asp-route-id="@etkinlik.Id" class="btn-satis">
+                                            <i class="fa-solid fa-ticket me-1"></i>Satış Yap
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn-disabled" disabled>
+                                            <i class="fa-solid fa-ban me-1"></i>Kapalı
+                                        </button>
+                                    }
                                 </td>
                             </tr>
                         }
@@ -126,26 +401,28 @@
                     else
                     {
                         <tr>
-                            <td colspan="6" class="text-center py-4 text-muted">
-                                Henüz planlanmış bir etkinlik bulunmuyor.
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fa-solid fa-calendar-xmark fa-3x mb-3 opacity-25"></i>
+                                <p class="mb-0">Henüz planlanmış bir etkinlik bulunmuyor.</p>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
-            </div>
         </div>
         
         <!-- Pagination Controls -->
         @if (ViewBag.TotalPages > 1)
         {
-            <div class="card-footer bg-white d-flex justify-content-center py-3">
+            <div class="pagination-wrapper d-flex justify-content-center">
                 <nav>
                     <ul class="pagination mb-0">
                         @if (ViewBag.CurrentPage > 1)
                         {
                             <li class="page-item">
-                                <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1 })">Önceki</a>
+                                <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1 })">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </a>
                             </li>
                         }
                         
@@ -159,7 +436,9 @@
                         @if (ViewBag.CurrentPage < ViewBag.TotalPages)
                         {
                             <li class="page-item">
-                                <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1 })">Sonraki</a>
+                                <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1 })">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </a>
                             </li>
                         }
                     </ul>
@@ -176,12 +455,12 @@
         var searchInput = document.getElementById("searchInput").value.toUpperCase();
         var cityFilter = document.getElementById("cityFilter").value.toUpperCase();
         var satisaAcikFilter = document.getElementById("satisaAcikFilter").checked;
-        var table = document.querySelector("table");
+        var table = document.getElementById("eventsTable");
         var tr = table.getElementsByTagName("tr");
 
         for (var i = 1; i < tr.length; i++) {
-            var tdName = tr[i].getElementsByTagName("td")[0]; // Etkinlik Adı
-            var tdSalon = tr[i].getElementsByTagName("td")[2]; // Salon (Şehir)
+            var tdName = tr[i].getElementsByTagName("td")[0];
+            var tdSalon = tr[i].getElementsByTagName("td")[2];
             var satisAktif = tr[i].getAttribute("data-satis-aktif") === "true";
 
             if (tdName && tdSalon) {
@@ -205,7 +484,6 @@
         document.getElementById("searchInput").value = "";
         document.getElementById("cityFilter").value = "";
         document.getElementById("satisaAcikFilter").checked = false;
-        
         applyFilters();
     }
 

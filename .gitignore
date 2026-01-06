@@ -59,3 +59,5 @@ $RECYCLE.BIN/
 
 # User Secrets
 secrets.json
+
+*.zip

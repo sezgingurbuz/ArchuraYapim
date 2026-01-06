@@ -4,51 +4,395 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="container py-5">
+<style>
+    /* Modern Etkinlikler Sayfası Stilleri */
+    .page-header {
+        background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        color: white;
+    }
+    .page-header h2 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    .page-header p {
+        opacity: 0.8;
+        margin-bottom: 0;
+    }
+
+    /* Takvim */
+    .calendar-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        padding: 1.5rem;
+        height: 100%;
+        border: none;
+    }
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .calendar-header h5 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 0;
+        color: #1a1f2e;
+    }
+    .calendar-nav {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #e9ecef;
+        background: white;
+        color: #6c757d;
+        transition: all 0.2s;
+    }
+    .calendar-nav:hover {
+        border-color: #0d6efd;
+        color: #0d6efd;
+    }
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+        text-align: center;
+    }
+    .calendar-day-header {
+        font-weight: 600;
+        color: #6c757d;
+        padding: 8px 0;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+    .calendar-day {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 8px 4px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+    }
+    .calendar-day:hover {
+        background: #e9ecef;
+    }
+    .calendar-day.empty {
+        background: transparent;
+        cursor: default;
+    }
+    .calendar-day.today {
+        background: #0d6efd;
+        color: white;
+        font-weight: 700;
+    }
+    .calendar-day.has-event {
+        background: #d4edda;
+        color: #155724;
+        font-weight: 600;
+    }
+    .event-dot {
+        width: 5px;
+        height: 5px;
+        background: #198754;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 3px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    /* Stat Kartları */
+    .stat-card {
+        border-radius: 16px;
+        padding: 1.5rem;
+        color: white;
+        height: 100%;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .stat-card h3 {
+        font-size: 3rem;
+        font-weight: 800;
+        margin: 0.5rem 0 0;
+    }
+    .stat-card .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    .stat-card .stat-badge {
+        background: rgba(255,255,255,0.2);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+    }
+    .stat-primary {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    }
+    .stat-success {
+        background: linear-gradient(135deg, #198754 0%, #157347 100%);
+    }
+
+    /* Etkinlik Oluşturma Kartı */
+    .create-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        overflow: hidden;
+        border: none;
+    }
+    .create-card-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+    }
+    .create-card-header h4 {
+        margin: 0;
+        font-weight: 700;
+    }
+    .create-card-body {
+        padding: 2rem;
+    }
+
+    /* Form Stilleri */
+    .form-control, .form-select {
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        transition: all 0.2s;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    }
+    .form-control-lg {
+        padding: 1rem 1.25rem;
+        font-size: 1rem;
+    }
+    .form-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Satış Tipi Radio */
+    .satis-tipi-option {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.25rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+    .satis-tipi-option:hover {
+        background: #e9ecef;
+    }
+    .satis-tipi-option.active {
+        background: #e7f1ff;
+        border-color: #0d6efd;
+    }
+
+    /* Etkinlik Listesi */
+    .list-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        overflow: hidden;
+        border: none;
+    }
+    .filters-section {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin: 1.25rem;
+        border: none;
+    }
+    .filters-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .filters-header h5 {
+        font-weight: 600;
+        color: #1a1f2e;
+        margin: 0;
+    }
+    .filter-controls {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+    .filter-group label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.4rem;
+        display: block;
+    }
+    .btn-clear-filter {
+        background: none;
+        border: none;
+        color: #6c757d;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-clear-filter:hover {
+        color: #0d6efd;
+    }
+
+    /* Modern Tablo */
+    .modern-table {
+        margin-bottom: 0;
+    }
+    .modern-table thead {
+        background: #f8f9fa;
+    }
+    .modern-table thead th {
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        padding: 1rem 1.25rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    .modern-table tbody tr {
+        transition: all 0.2s;
+    }
+    .modern-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+    .modern-table tbody td {
+        padding: 1rem 1.25rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .modern-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Butonlar */
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    .btn-action:hover {
+        transform: scale(1.1);
+    }
+    .btn-submit {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(13, 110, 253, 0.35);
+        transition: all 0.3s;
+    }
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(13, 110, 253, 0.45);
+    }
+
+    /* Kategori Panel */
+    .kategori-card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .kategori-card .card-header {
+        background: #ffc107;
+        color: #1a1f2e;
+        font-weight: 700;
+    }
+    .kategori-satir {
+        background: white;
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        transition: all 0.2s;
+    }
+    .kategori-satir:hover {
+        border-color: #ffc107;
+    }
+
+    /* Pagination */
+    .pagination-wrapper {
+        padding: 1.25rem;
+        background: #f8f9fa;
+    }
+    .pagination .page-link {
+        border: none;
+        padding: 0.6rem 1rem;
+        margin: 0 0.2rem;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+    .pagination .page-item.active .page-link {
+        background: #0d6efd;
+    }
+
+    /* Alert */
+    .alert-modern {
+        border-radius: 12px;
+        border: none;
+    }
+</style>
+
+<div class="container-fluid py-4">
     
-    <style>
-        .filters-section { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #e9ecef; }
-        .filters-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .filter-controls { display: flex; gap: 20px; flex-wrap: wrap; }
-        .filter-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 5px; }
-        .filter-group label { font-size: 0.85rem; font-weight: 600; color: #6c757d; }
-        .filter-group input, .filter-group select { padding: 8px 12px; border: 1px solid #ced4da; border-radius: 6px; }
-        .btn-view { background: none; border: none; color: #0d6efd; font-size: 0.9rem; cursor: pointer; text-decoration: underline; }
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h2><i class="fa-solid fa-masks-theater me-2"></i>Etkinlik Yönetimi</h2>
+                <p>Yeni etkinlik oluşturun ve mevcut etkinlikleri yönetin</p>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-light text-dark px-3 py-2 rounded-pill">
+                    <i class="fa-solid fa-calendar me-1"></i>@DateTime.Now.ToString("dd MMMM yyyy")
+                </span>
+            </div>
+        </div>
+    </div>
 
-        /* Calendar Styles */
-        .calendar-section { margin-bottom: 0; } /* Removed bottom margin as it's in a column now */
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .calendar-header h5 { font-size: 1rem; font-weight: bold; margin: 0; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
-        .calendar-day-header { font-weight: bold; color: #6c757d; padding: 5px 0; font-size: 0.8rem; }
-        .calendar-day { 
-            background: #fff; border: 1px solid #e9ecef; border-radius: 4px; 
-            padding: 5px; min-height: 40px; position: relative; cursor: pointer; 
-            transition: all 0.2s; font-size: 0.9rem;
-        }
-        .calendar-day:hover { background-color: #f8f9fa; border-color: #adb5bd; }
-        .calendar-day.empty { background: transparent; border: none; cursor: default; }
-        .calendar-day.today { border: 2px solid #0d6efd; }
-        .calendar-day.has-event { background-color: #d1e7dd; border-color: #badbcc; color: #0f5132; font-weight: bold; }
-        .calendar-day.selected { background-color: #0d6efd !important; color: white !important; border-color: #0d6efd; }
-        .calendar-date { font-size: 0.8rem; margin-bottom: 0; display: block; }
-        .event-dot { width: 6px; height: 6px; background-color: #198754; border-radius: 50%; display: inline-block; margin: 0 1px; }
-        
-        /* Stat Cards */
-        .stat-card-custom { border-radius: 10px; padding: 20px; color: white; height: 100%; display: flex; flex-direction: column; justify-content: center; }
-        .stat-card-custom h3 { font-size: 2.5rem; font-weight: bold; margin: 0; }
-        .stat-card-custom p { font-size: 1rem; margin: 0; opacity: 0.9; }
-    </style>
-
-    <!-- DASHBOARD SECTION -->
+    <!-- DASHBOARD ROW -->
     <div class="row g-4 mb-4">
-        <!-- Calendar (Left) -->
+        <!-- Calendar -->
         <div class="col-lg-4">
-            <div class="calendar-section bg-white rounded shadow-sm border p-3">
+            <div class="calendar-card">
                 <div class="calendar-header">
-                    <button class="btn btn-outline-secondary btn-sm p-0 px-2" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left" style="font-size:0.8rem"></i></button>
-                    <h5 class="m-0" id="currentMonthYear">Aralık 2025</h5>
-                    <button class="btn btn-outline-secondary btn-sm p-0 px-2" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right" style="font-size:0.8rem"></i></button>
+                    <button class="calendar-nav" onclick="changeMonth(-1)">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <h5 id="currentMonthYear">Aralık 2025</h5>
+                    <button class="calendar-nav" onclick="changeMonth(1)">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
                 </div>
                 <div class="calendar-grid">
                     <div class="calendar-day-header">Pzt</div>
@@ -58,77 +402,76 @@
                     <div class="calendar-day-header">Cum</div>
                     <div class="calendar-day-header">Cmt</div>
                     <div class="calendar-day-header">Paz</div>
-                    
                     <div id="calendarDays" style="display: contents;"></div>
                 </div>
             </div>
         </div>
         
-        <!-- Stats (Right) -->
+        <!-- Stats -->
         <div class="col-lg-8">
             <div class="row g-4 h-100">
                 <div class="col-md-6">
                     @{
-                        // Calculate Upcoming Events (Next 30 Days)
                         var today = DateTime.Today;
                         var next30Days = today.AddDays(30);
                         var upcomingCount = Model.MevcutEtkinlikler?.Count(e => e.TarihSaat >= today && e.TarihSaat <= next30Days) ?? 0;
-                        
-                        // Total Events
                         var totalCount = Model.MevcutEtkinlikler?.Count ?? 0;
                     }
-                    <div class="stat-card-custom bg-primary shadow-sm">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                             <p><i class="fa-solid fa-hourglass-half me-2"></i>Yaklaşan Etkinlikler</p>
-                             <small class="badge bg-light text-primary">30 Gün</small>
+                    <div class="stat-card stat-primary">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="stat-label"><i class="fa-solid fa-hourglass-half me-2"></i>Yaklaşan Etkinlikler</div>
+                                <h3>@upcomingCount</h3>
+                            </div>
+                            <span class="stat-badge">30 Gün</span>
                         </div>
-                        <h3>@upcomingCount</h3>
                     </div>
                 </div>
                 <div class="col-md-6">
-                     <div class="stat-card-custom bg-success shadow-sm">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                             <p><i class="fa-solid fa-ticket me-2"></i>Toplam Etkinlik</p>
-                             <small class="badge bg-light text-success">Hepsi</small>
+                    <div class="stat-card stat-success">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="stat-label"><i class="fa-solid fa-ticket me-2"></i>Toplam Etkinlik</div>
+                                <h3>@totalCount</h3>
+                            </div>
+                            <span class="stat-badge">Hepsi</span>
                         </div>
-                        <h3>@totalCount</h3>
                     </div>
                 </div>
-                <!-- Optional: Add more widgets here or leave empty -->
             </div>
         </div>
     </div>
 
-    <div class="event-create-card bg-white rounded shadow-sm border overflow-hidden" style="max-width: 800px; margin: 0 auto;">
-        
-        <div class="event-header bg-primary text-white p-4">
-            <h4 class="m-0"><i class="fa-regular fa-calendar-plus me-2"></i>Yeni Etkinlik Planla</h4>
+    <!-- ETKİNLİK OLUŞTURMA FORMU -->
+    <div class="create-card mb-4" style="max-width: 900px; margin: 0 auto;">
+        <div class="create-card-header">
+            <h4><i class="fa-regular fa-calendar-plus me-2"></i>Yeni Etkinlik Planla</h4>
         </div>
 
         @if (TempData["SuccessMessage"] != null)
         {
-            <div class="alert alert-success m-3">
+            <div class="alert alert-success alert-modern m-3">
                 <i class="fa-solid fa-check-circle me-2"></i>@TempData["SuccessMessage"]
             </div>
         }
 
         @if (ViewBag.ErrorMessage != null)
         {
-            <div class="alert alert-danger m-3">
+            <div class="alert alert-danger alert-modern m-3">
                 @Html.Raw(ViewBag.ErrorMessage)
             </div>
         }
 
-        <div class="event-body p-4">
+        <div class="create-card-body">
             <form asp-action="Index" method="post">
                 
                 <div class="row g-4 mb-4">
                     <div class="col-md-8">
-                        <label class="form-label fw-bold text-muted small">Etkinlik İsmi</label>
+                        <label class="form-label">Etkinlik İsmi</label>
                         <input asp-for="EtkinlikAdi" type="text" class="form-control form-control-lg" placeholder="Örn: Hamlet Gösterimi" required />
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-bold text-muted small">Türü</label>
+                        <label class="form-label">Türü</label>
                         <select asp-for="Tur" class="form-select form-select-lg">
                             <option>Tiyatro</option>
                             <option>Müzikal</option>
@@ -140,13 +483,13 @@
 
                 <div class="row g-4 mb-4">
                     <div class="col-md-6">
-                        <label class="form-label fw-bold text-muted small">Şehir</label>
+                        <label class="form-label">Şehir</label>
                         <select name="Sehir" id="citySelect" asp-items="Model.SehirlerListesi" class="form-select" required>
                             <option value="">Şehir seçiniz...</option>
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold text-muted small">Salon</label>
+                        <label class="form-label">Salon</label>
                         <select asp-for="SecilenSalonId" id="salonSelect" class="form-select" required>
                             <option value="">Önce şehir seçiniz...</option>
                         </select>
@@ -155,58 +498,58 @@
 
                 <div class="row g-4 mb-4">
                     <div class="col-md-4">
-                        <label class="form-label fw-bold text-muted small">Gün</label>
+                        <label class="form-label">Gün</label>
                         <input asp-for="Tarih" type="date" class="form-control" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-bold text-muted small">Saat</label>
+                        <label class="form-label">Saat</label>
                         <input asp-for="Saat" type="time" class="form-control" required>
                     </div>
                 </div>
 
                 <!-- SATIŞ TİPİ SEÇİMİ -->
-                <div class="row g-4 mb-4">
-                    <div class="col-12">
-                        <label class="form-label fw-bold text-muted small">Satış Tipi</label>
-                        <div class="d-flex gap-4">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="SatisTipi" id="satisTipiKoltuk" value="Koltuk" checked onchange="toggleKategoriPanel()">
-                                <label class="form-check-label fw-semibold" for="satisTipiKoltuk">
-                                    <i class="fa-solid fa-couch me-1"></i> Koltuk Sat
-                                </label>
-                                <small class="d-block text-muted ms-4">Numaralı koltuk satışı yapılır</small>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="SatisTipi" id="satisTipiKategori" value="Kategori" onchange="toggleKategoriPanel()">
-                                <label class="form-check-label fw-semibold" for="satisTipiKategori">
-                                    <i class="fa-solid fa-tags me-1"></i> Kategori Sat
-                                </label>
-                                <small class="d-block text-muted ms-4">Numarasız kategori bileti satılır</small>
-                            </div>
+                <div class="mb-4">
+                    <label class="form-label">Satış Tipi</label>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="satis-tipi-option d-block active" id="koltukOption" onclick="selectSatisTipi('Koltuk')">
+                                <div class="form-check mb-0">
+                                    <input class="form-check-input" type="radio" name="SatisTipi" id="satisTipiKoltuk" value="Koltuk" checked>
+                                    <span class="fw-bold ms-2"><i class="fa-solid fa-couch me-1"></i> Koltuk Sat</span>
+                                </div>
+                                <small class="text-muted d-block mt-2 ms-4">Numaralı koltuk satışı yapılır</small>
+                            </label>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="satis-tipi-option d-block" id="kategoriOption" onclick="selectSatisTipi('Kategori')">
+                                <div class="form-check mb-0">
+                                    <input class="form-check-input" type="radio" name="SatisTipi" id="satisTipiKategori" value="Kategori">
+                                    <span class="fw-bold ms-2"><i class="fa-solid fa-tags me-1"></i> Kategori Sat</span>
+                                </div>
+                                <small class="text-muted d-block mt-2 ms-4">Numara kategori bileti satılır</small>
+                            </label>
                         </div>
                     </div>
                 </div>
 
                 <!-- KATEGORİ EKLEME PANELİ -->
                 <div id="kategoriPanel" class="mb-4" style="display: none;">
-                    <div class="card border-warning">
-                        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <div class="card kategori-card border-warning">
+                        <div class="card-header d-flex justify-content-between align-items-center py-3">
                             <h6 class="m-0"><i class="fa-solid fa-layer-group me-2"></i>Bilet Kategorileri</h6>
-                            <button type="button" class="btn btn-sm btn-dark" onclick="kategoriEkle()">
+                            <button type="button" class="btn btn-dark btn-sm rounded-pill px-3" onclick="kategoriEkle()">
                                 <i class="fa-solid fa-plus me-1"></i>Kategori Ekle
                             </button>
                         </div>
                         <div class="card-body">
-                            <div class="alert alert-info mb-3">
+                            <div class="alert alert-info alert-modern mb-3">
                                 <i class="fa-solid fa-info-circle me-2"></i>
                                 Kategori satışında müşteriler online bilet alır, gişede koltuk ataması yapılır.
                             </div>
                             
-                            <div id="kategoriListesi">
-                                <!-- Dinamik kategori satırları buraya eklenecek -->
-                            </div>
+                            <div id="kategoriListesi"></div>
                             
-                            <div id="kategoriUyari" class="text-muted text-center py-3" style="display: block;">
+                            <div id="kategoriUyari" class="text-muted text-center py-4">
                                 <i class="fa-solid fa-exclamation-triangle me-2"></i>
                                 Henüz kategori eklenmedi. "Kategori Ekle" butonuna tıklayın.
                             </div>
@@ -214,11 +557,10 @@
                     </div>
                 </div>
                 
-                <!-- Hidden input for categories JSON -->
                 <input type="hidden" asp-for="KategorilerJson" id="kategorilerJson" />
 
                 <div class="d-flex justify-content-end gap-3 mt-5">
-                    <button type="submit" class="btn btn-primary px-5 fw-bold">
+                    <button type="submit" class="btn btn-primary btn-submit">
                         <i class="fa-solid fa-check me-2"></i>Etkinliği ve Biletleri Oluştur
                     </button>
                 </div>
@@ -227,37 +569,40 @@
     </div>
 
     <!-- MEVCUT ETKİNLİKLER LİSTESİ -->
-    <div class="card mt-5 shadow-sm border-0">
-        <!-- Server-side Filter Form -->
-        <div class="filters-section mx-3 mt-3">
+    <div class="list-card">
+        <div class="filters-section">
             <form asp-action="Index" method="get" id="filterForm">
                 <div class="filters-header">
-                    <h5 class="m-0 text-muted"><i class="fa-solid fa-filter me-2"></i>Filtrele ve Ara</h5>
-                    <a href="@Url.Action("Index")" class="btn-view">Filtreleri Temizle</a>
+                    <h5><i class="fa-solid fa-filter me-2 text-primary"></i>Filtrele ve Ara</h5>
+                    <a href="@Url.Action("Index")" class="btn-clear-filter">
+                        <i class="fa-solid fa-times me-1"></i>Temizle
+                    </a>
                 </div>
                 <div class="filter-controls">
                     <div class="filter-group">
                         <label>Etkinlik Ara</label>
                         <input type="text" name="search" value="@ViewBag.SearchTerm" placeholder="Etkinlik veya Salon adı..." class="form-control">
                     </div>
-                    <div class="filter-group d-flex align-items-end">
-                         <button type="submit" class="btn btn-primary w-100">Ara</button>
+                    <div class="filter-group" style="max-width: 120px;">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn btn-primary w-100">Ara</button>
                     </div>
                 </div>
             </form>
         </div>
 
-        <div class="card-header bg-white py-3 border-top">
-            <h5 class="m-0 text-muted"><i class="fa-solid fa-list me-2"></i>Mevcut Etkinlikler</h5>
+        <div class="card-header bg-white py-3 border-top d-flex justify-content-between align-items-center mx-3">
+            <h5 class="m-0 fw-bold"><i class="fa-solid fa-list me-2 text-success"></i>Mevcut Etkinlikler</h5>
+            <span class="badge bg-primary rounded-pill px-3">@totalCount Etkinlik</span>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
+        
+        <div class="table-responsive">
+            <table class="table modern-table">
+                <thead>
                     <tr>
                         <th class="ps-4">Etkinlik Adı</th>
                         <th class="d-none d-md-table-cell">Tür</th>
-                        <th>Salon (Şehir)</th>
+                        <th>Salon</th>
                         <th>Tarih & Saat</th>
                         <th>Durum</th>
                         <th class="text-end pe-4">İşlemler</th>
@@ -269,43 +614,54 @@
                         @foreach (var etkinlik in Model.MevcutEtkinlikler)
                         {
                             <tr data-date="@etkinlik.TarihSaat.ToString("yyyy-MM-dd")">
-                                <td class="ps-4 fw-bold">@etkinlik.EtkinlikAdi</td>
-                                <td class="d-none d-md-table-cell"><span class="badge bg-secondary">@etkinlik.Tur</span></td>
-                                <td>@etkinlik.Salon?.SalonAdi (@etkinlik.Salon?.Sehir)</td>
+                                <td class="ps-4">
+                                    <div class="fw-bold" style="color: #1a1f2e;">@etkinlik.EtkinlikAdi</div>
+                                </td>
+                                <td class="d-none d-md-table-cell">
+                                    <span class="badge bg-secondary rounded-pill">@etkinlik.Tur</span>
+                                </td>
                                 <td>
-                                    <div>@etkinlik.TarihSaat.ToString("dd.MM.yyyy")</div>
-                                    <small class="text-muted">@etkinlik.TarihSaat.ToString("HH:mm")</small>
+                                    <div class="fw-medium">@etkinlik.Salon?.SalonAdi</div>
+                                    <small class="text-muted"><i class="fa-solid fa-location-dot me-1"></i>@etkinlik.Salon?.Sehir</small>
+                                </td>
+                                <td>
+                                    <div class="fw-bold">@etkinlik.TarihSaat.ToString("dd MMM yyyy")</div>
+                                    <small class="text-muted"><i class="fa-regular fa-clock me-1"></i>@etkinlik.TarihSaat.ToString("HH:mm")</small>
                                 </td>
                                 <td>
                                     @if(etkinlik.SatisAktifMi)
                                     {
-                                         <span class="badge bg-success">Satışta</span>
+                                        <span class="badge rounded-pill px-3 py-2" style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); color: #155724;">
+                                            <i class="fa-solid fa-circle me-1" style="font-size: 0.5rem;"></i>Satışta
+                                        </span>
                                     }
                                     else
                                     {
-                                         <span class="badge bg-secondary">Satışa Kapalı</span>
+                                        <span class="badge bg-secondary rounded-pill px-3 py-2">
+                                            <i class="fa-solid fa-pause me-1"></i>Kapalı
+                                        </span>
                                     }
                                 </td>
                                 <td class="text-end pe-4">
-                                    <div class="btn-group">
+                                    <div class="d-flex gap-1 justify-content-end">
                                         @if(!etkinlik.SatisAktifMi)
                                         {
-                                            <a asp-action="SatisAc" asp-route-id="@etkinlik.Id" class="btn btn-outline-success btn-sm" onclick="return confirm('Bu etkinliği satışa açmak istediğinize emin misiniz?')" title="Satışa Aç">
+                                            <a asp-action="SatisAc" asp-route-id="@etkinlik.Id" class="btn btn-action btn-outline-success" onclick="return confirm('Bu etkinliği satışa açmak istediğinize emin misiniz?')" title="Satışa Aç">
                                                 <i class="fa-solid fa-play"></i>
                                             </a>
                                         }
-                                        <a asp-action="Detay" asp-route-id="@etkinlik.Id" class="btn btn-outline-primary btn-sm" title="Koltuk Düzenini Gör">
+                                        <a asp-action="Detay" asp-route-id="@etkinlik.Id" class="btn btn-action btn-outline-primary" title="Detay">
                                             <i class="fa-solid fa-eye"></i>
                                         </a>
-                                        <a asp-action="Duzenle" asp-route-id="@etkinlik.Id" class="btn btn-outline-warning btn-sm" title="Düzenle">
+                                        <a asp-action="Duzenle" asp-route-id="@etkinlik.Id" class="btn btn-action btn-outline-warning" title="Düzenle">
                                             <i class="fa-solid fa-pen"></i>
                                         </a>
                                         <form asp-area="Admin" asp-controller="Rapor" asp-action="RaporaGonder" asp-route-id="@etkinlik.Id" method="post" style="display:inline;" onsubmit="return confirmRapor('@etkinlik.EtkinlikAdi', '@etkinlik.TarihSaat.ToString("yyyy-MM-dd HH:mm")')">
-                                            <button type="submit" class="btn btn-outline-info btn-sm" title="Rapora Gönder">
+                                            <button type="submit" class="btn btn-action btn-outline-info" title="Rapora Gönder">
                                                 <i class="fa-solid fa-file-archive"></i>
                                             </button>
                                         </form>
-                                        <a asp-action="Sil" asp-route-id="@etkinlik.Id" class="btn btn-outline-danger btn-sm" onclick="return confirm('Bu etkinliği silmek istediğinize emin misiniz?')" title="Sil">
+                                        <a asp-action="Sil" asp-route-id="@etkinlik.Id" class="btn btn-action btn-outline-danger" onclick="return confirm('Bu etkinliği silmek istediğinize emin misiniz?')" title="Sil">
                                             <i class="fa-solid fa-trash"></i>
                                         </a>
                                     </div>
@@ -316,26 +672,27 @@
                     else
                     {
                         <tr>
-                            <td colspan="6" class="text-center py-4 text-muted">
-                                Henüz planlanmış bir etkinlik bulunmuyor veya arama sonucu boş.
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fa-solid fa-calendar-xmark fa-3x mb-3 opacity-25"></i>
+                                <p class="mb-0">Henüz planlanmış bir etkinlik bulunmuyor veya arama sonucu boş.</p>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
-            </div>
         </div>
         
-        <!-- Pagination Controls -->
         @if (ViewBag.TotalPages > 1)
         {
-            <div class="card-footer bg-white d-flex justify-content-center py-3">
+            <div class="pagination-wrapper d-flex justify-content-center">
                 <nav>
                     <ul class="pagination mb-0">
                         @if (ViewBag.CurrentPage > 1)
                         {
                             <li class="page-item">
-                                <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1, search = ViewBag.SearchTerm })">Önceki</a>
+                                <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1, search = ViewBag.SearchTerm })">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </a>
                             </li>
                         }
                         
@@ -349,7 +706,9 @@
                         @if (ViewBag.CurrentPage < ViewBag.TotalPages)
                         {
                             <li class="page-item">
-                                <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1, search = ViewBag.SearchTerm })">Sonraki</a>
+                                <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1, search = ViewBag.SearchTerm })">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </a>
                             </li>
                         }
                     </ul>
@@ -381,9 +740,24 @@
             );
         }
     }
+
+    // Satış tipi seçimi
+    function selectSatisTipi(tip) {
+        document.getElementById('koltukOption').classList.remove('active');
+        document.getElementById('kategoriOption').classList.remove('active');
+        
+        if (tip === 'Koltuk') {
+            document.getElementById('satisTipiKoltuk').checked = true;
+            document.getElementById('koltukOption').classList.add('active');
+            document.getElementById('kategoriPanel').style.display = 'none';
+        } else {
+            document.getElementById('satisTipiKategori').checked = true;
+            document.getElementById('kategoriOption').classList.add('active');
+            document.getElementById('kategoriPanel').style.display = 'block';
+        }
+    }
     
     $(document).ready(function () {
-        // Şehir değiştiğinde çalışır
         $('#citySelect').change(function () {
             var selectedCity = $(this).val();
             var salonSelect = $('#salonSelect');
@@ -398,10 +772,6 @@
                     success: function (data) {
                         salonSelect.empty().append('<option value="">Bir salon seçiniz...</option>');
                         
-                        if (data.length === 0) {
-                            console.warn('No salons found regarding the city:', selectedCity);
-                        }
-
                         $.each(data, function (index, item) {
                             salonSelect.append($('<option>', {
                                 value: item.id,
@@ -417,58 +787,43 @@
             }
         });
 
-        // Başarı mesajını 3 saniye sonra kaybet
         setTimeout(function() {
             $('.alert-success').fadeOut('slow');
         }, 3000);
     });
 
-    // --- CALENDAR LOGIC (Visual Only) ---
+    // --- CALENDAR LOGIC ---
     var currentDate = new Date();
-    // Note: This only shows events on the CURRENT page in the calendar. 
-    // Ideally we should fetch ALL events for calendar via AJAX, but for now this is consistent with the view model.
     var eventDates = @Html.Raw(Json.Serialize(Model.MevcutEtkinlikler?.Select(e => e.TarihSaat.ToString("yyyy-MM-dd")).ToList() ?? new List<string>()));
 
     function renderCalendar() {
         var year = currentDate.getFullYear();
         var month = currentDate.getMonth();
-
-        // Month Names
         var monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
         $('#currentMonthYear').text(monthNames[month] + " " + year);
 
-        var firstDayIndex = new Date(year, month, 1).getDay(); // 0 = Sun, 1 = Mon...
-        // Adjust for Monday start (Monday=0, Sunday=6)
+        var firstDayIndex = new Date(year, month, 1).getDay();
         firstDayIndex = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
-
         var daysInMonth = new Date(year, month + 1, 0).getDate();
         var calendarDays = $('#calendarDays');
         calendarDays.empty();
 
-        // Empty cells before first day
         for (var i = 0; i < firstDayIndex; i++) {
             calendarDays.append('<div class="calendar-day empty"></div>');
         }
 
-        // Days
         for (var d = 1; d <= daysInMonth; d++) {
             var dateStr = year + "-" + String(month + 1).padStart(2, '0') + "-" + String(d).padStart(2, '0');
             var hasEvent = eventDates.includes(dateStr);
             var isToday = new Date().toDateString() === new Date(year, month, d).toDateString();
             
-            var dayEl = $('<div>')
-                .addClass('calendar-day')
-                .attr('data-date', dateStr);
-             
-             // Removed click filter for calendar as it complexes with server-side pagination for now
-
+            var dayEl = $('<div>').addClass('calendar-day').attr('data-date', dateStr);
             if (isToday) dayEl.addClass('today');
             if (hasEvent) {
                 dayEl.addClass('has-event');
-                dayEl.append('<div><span class="event-dot"></span></div>'); 
+                dayEl.append('<div class="event-dot"></div>');
             }
-
-            dayEl.prepend('<span class="calendar-date">' + d + '</span>');
+            dayEl.prepend('<span>' + d + '</span>');
             calendarDays.append(dayEl);
         }
     }
@@ -478,45 +833,32 @@
         renderCalendar();
     }
 
-    // Initialize Calendar
     renderCalendar();
 
     // --- KATEGORİ YÖNETİMİ ---
-    var kategoriler = [];
     var kategoriSayac = 0;
-
-    function toggleKategoriPanel() {
-        var isKategori = document.getElementById('satisTipiKategori').checked;
-        var panel = document.getElementById('kategoriPanel');
-        
-        if (isKategori) {
-            panel.style.display = 'block';
-        } else {
-            panel.style.display = 'none';
-        }
-    }
 
     function kategoriEkle() {
         kategoriSayac++;
         var kategoriId = 'kategori_' + kategoriSayac;
         
         var html = `
-            <div id="${kategoriId}" class="kategori-satir border rounded p-3 mb-2 bg-white">
+            <div id="${kategoriId}" class="kategori-satir">
                 <div class="row g-3 align-items-center">
                     <div class="col-md-4">
-                        <label class="form-label small text-muted">Kategori Adı</label>
-                        <input type="text" class="form-control kategori-adi" placeholder="Örn: VIP, Balkon, Parter" required>
+                        <label class="form-label">Kategori Adı</label>
+                        <input type="text" class="form-control kategori-adi" placeholder="Örn: VIP, Balkon" required>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label small text-muted">Fiyat (₺)</label>
+                        <label class="form-label">Fiyat (₺)</label>
                         <input type="number" class="form-control kategori-fiyat" min="0" step="0.01" placeholder="0.00" required>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label small text-muted">Kontenjan <small class="text-muted">(opsiyonel)</small></label>
+                        <label class="form-label">Kontenjan</label>
                         <input type="number" class="form-control kategori-kontenjan" min="1" placeholder="Sınırsız">
                     </div>
                     <div class="col-md-2 text-end">
-                        <label class="form-label small text-muted">&nbsp;</label>
+                        <label class="form-label">&nbsp;</label>
                         <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="kategoriSil('${kategoriId}')">
                             <i class="fa-solid fa-trash"></i>
                         </button>
@@ -527,18 +869,15 @@
         
         document.getElementById('kategoriListesi').insertAdjacentHTML('beforeend', html);
         document.getElementById('kategoriUyari').style.display = 'none';
-        
         updateKategorilerJson();
     }
 
     function kategoriSil(id) {
         document.getElementById(id).remove();
-        
         var liste = document.getElementById('kategoriListesi');
         if (liste.children.length === 0) {
             document.getElementById('kategoriUyari').style.display = 'block';
         }
-        
         updateKategorilerJson();
     }
 
@@ -563,13 +902,11 @@
         document.getElementById('kategorilerJson').value = JSON.stringify(kategoriler);
     }
 
-    // Form submit öncesi kategorileri güncelle
     document.querySelector('form').addEventListener('submit', function(e) {
         var isKategori = document.getElementById('satisTipiKategori').checked;
         
         if (isKategori) {
             updateKategorilerJson();
-            
             var kategorilerValue = document.getElementById('kategorilerJson').value;
             var kategoriler = JSON.parse(kategorilerValue || '[]');
             
@@ -581,9 +918,7 @@
         }
     });
 
-    // Input değişikliklerinde JSON güncelle
     document.getElementById('kategoriListesi').addEventListener('input', function(e) {
         updateKategorilerJson();
     });
-
 </script>

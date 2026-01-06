@@ -5,33 +5,181 @@
 }
 
 <style>
+    /* Premium Dashboard Styles */
     .stat-card {
-        border-left: 4px solid;
-        transition: transform 0.2s, box-shadow 0.2s;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        border: none;
+        overflow: hidden;
     }
     .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
     }
-    .stat-icon {
-        width: 60px;
-        height: 60px;
+    .stat-card .stat-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+    .stat-card h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+    .stat-card .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Bugün Kartı - Profesyonel Koyu Mavi */
+    .today-card {
+        background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 100%);
+        border-radius: 20px;
+        color: white;
+        overflow: hidden;
+        position: relative;
+    }
+    .today-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);
+        pointer-events: none;
+    }
+    .today-card .card-body {
+        position: relative;
+        z-index: 1;
+        padding: 2rem;
+    }
+    .today-card .today-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        backdrop-filter: blur(5px);
+    }
+    .today-card .today-stat {
+        background: rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 1.25rem;
+        backdrop-filter: blur(5px);
+        transition: all 0.3s;
+    }
+    .today-card .today-stat:hover {
+        background: rgba(255,255,255,0.18);
+        transform: scale(1.02);
+    }
+    .today-card .stat-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+    }
+    .today-card .stat-label {
+        opacity: 0.9;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Hızlı Erişim Kartları */
+    .quick-menu {
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    .quick-menu-item {
+        padding: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        text-decoration: none;
+        color: #333;
+        background: white;
+        transition: all 0.3s;
+        border-bottom: 1px solid #eee;
+    }
+    .quick-menu-item:last-child {
+        border-bottom: none;
+    }
+    .quick-menu-item:hover {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding-left: 1.75rem;
+        color: #0d6efd;
+    }
+    .quick-menu-item .menu-icon {
+        width: 50px;
+        height: 50px;
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem;
+        font-size: 1.25rem;
+        transition: all 0.3s;
+    }
+    .quick-menu-item:hover .menu-icon {
+        transform: scale(1.1);
+    }
+    .quick-menu-item .menu-text {
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    .quick-menu-item .menu-desc {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    /* Etkinlik Listesi */
+    .activity-card {
+        border-radius: 16px;
+        overflow: hidden;
     }
     .activity-item {
-        border-left: 3px solid #e9ecef;
-        transition: all 0.2s;
+        border-left: 4px solid #e9ecef;
+        transition: all 0.3s;
+        padding: 1.25rem;
     }
     .activity-item:hover {
         border-left-color: #0d6efd;
-        background-color: #f8f9fa;
+        background: linear-gradient(135deg, #f8f9fa 0%, white 100%);
     }
-    .progress-thin {
-        height: 6px;
+    .progress-bar-custom {
+        height: 8px;
+        border-radius: 4px;
+    }
+
+    /* Son Satışlar */
+    .sale-item {
+        padding: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+        transition: all 0.2s;
+    }
+    .sale-item:hover {
+        background: #f8f9fa;
+    }
+    .sale-badge {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .today-card .stat-value {
+            font-size: 1.6rem;
+        }
+        .stat-card h3 {
+            font-size: 1.5rem;
+        }
     }
 </style>
 
@@ -40,39 +188,81 @@
     <!-- WELCOME SECTION -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="fw-bold mb-1">
-                        Hoş Geldiniz, @User.Identity.Name! 👋
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                <div class="mb-3 mb-md-0">
+                    <h2 class="fw-bold mb-1" style="font-size: 1.75rem;">
+                        Merhaba, @User.Identity.Name! 👋
                     </h2>
                     <p class="text-muted mb-0">İşte bugünkü özet bilgileriniz</p>
                 </div>
-                <div class="text-muted">
-                    <i class="fa-solid fa-calendar me-2"></i>@DateTime.Now.ToString("dd MMMM yyyy, dddd")
+                <div class="d-flex align-items-center px-3 py-2 rounded-pill bg-light">
+                    <i class="fa-solid fa-calendar me-2 text-primary"></i>
+                    <span class="text-muted fw-medium">@DateTime.Now.ToString("dd MMMM yyyy, dddd")</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- STATISTICS CARDS -->
+    <!-- BUGÜN KARTI - Ana Odak -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="today-card shadow-lg">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="today-icon">
+                                <i class="fa-solid fa-sun"></i>
+                            </div>
+                            <h4 class="fw-bold mb-1">Bugün</h4>
+                            <p class="mb-0 opacity-75">@DateTime.Now.ToString("dd MMMM yyyy")</p>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="today-stat">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fa-solid fa-ticket me-2" style="font-size: 1.2rem;"></i>
+                                            <span class="stat-label">Satılan Bilet</span>
+                                        </div>
+                                        <div class="stat-value">@Model.BugunSatilanBilet</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="today-stat">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fa-solid fa-turkish-lira-sign me-2" style="font-size: 1.2rem;"></i>
+                                            <span class="stat-label">Bugünkü Ciro</span>
+                                        </div>
+                                        <div class="stat-value">@Model.BugunHasilat.ToString("C0")</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GENEL İSTATİSTİKLER -->
     <div class="row g-4 mb-4">
         <!-- Toplam Etkinlikler -->
         <div class="col-md-6 col-lg-3">
-            <div class="card border-0 shadow-sm stat-card" style="border-left-color: #0d6efd;">
+            <div class="card stat-card shadow-sm h-100" style="border-left: 5px solid #0d6efd;">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="text-muted text-uppercase small fw-bold mb-1">Toplam Etkinlik</p>
-                            <h3 class="fw-bold mb-0">@Model.ToplamEtkinlik</h3>
+                            <p class="text-muted text-uppercase small fw-bold mb-2">Toplam Etkinlik</p>
+                            <h3>@Model.ToplamEtkinlik</h3>
+                            <p class="mb-0 mt-2">
+                                <span class="badge bg-success-subtle text-success">
+                                    <i class="fa-solid fa-arrow-up me-1"></i>@Model.AktifEtkinlik Aktif
+                                </span>
+                            </p>
                         </div>
-                        <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                        <div class="stat-icon bg-primary text-white">
                             <i class="fa-solid fa-masks-theater"></i>
                         </div>
-                    </div>
-                    <div class="mt-3">
-                        <small class="text-success">
-                            <i class="fa-solid fa-arrow-up me-1"></i>@Model.AktifEtkinlik Aktif
-                        </small>
                     </div>
                 </div>
             </div>
@@ -80,21 +270,21 @@
 
         <!-- Satılan Biletler -->
         <div class="col-md-6 col-lg-3">
-            <div class="card border-0 shadow-sm stat-card" style="border-left-color: #198754;">
+            <div class="card stat-card shadow-sm h-100" style="border-left: 5px solid #198754;">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="text-muted text-uppercase small fw-bold mb-1">Satılan Bilet</p>
-                            <h3 class="fw-bold mb-0">@Model.ToplamSatilanBilet</h3>
+                            <p class="text-muted text-uppercase small fw-bold mb-2">Toplam Bilet</p>
+                            <h3>@Model.ToplamSatilanBilet</h3>
+                            <p class="mb-0 mt-2">
+                                <span class="text-muted small">
+                                    <i class="fa-solid fa-chart-line me-1"></i>Tüm zamanlar
+                                </span>
+                            </p>
                         </div>
-                        <div class="stat-icon bg-success bg-opacity-10 text-success">
+                        <div class="stat-icon bg-success text-white">
                             <i class="fa-solid fa-ticket"></i>
                         </div>
-                    </div>
-                    <div class="mt-3">
-                        <small class="text-muted">
-                            <i class="fa-solid fa-chart-line me-1"></i>Tüm zamanlar
-                        </small>
                     </div>
                 </div>
             </div>
@@ -104,21 +294,21 @@
         @if (User.IsInRole("Admin") || User.IsInRole("Okan"))
         {
             <div class="col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm stat-card" style="border-left-color: #ffc107;">
+                <div class="card stat-card shadow-sm h-100" style="border-left: 5px solid #ffc107;">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <p class="text-muted text-uppercase small fw-bold mb-1">Toplam Hasılat</p>
-                                <h3 class="fw-bold mb-0">@Model.ToplamHasilat.ToString("C0")</h3>
+                                <p class="text-muted text-uppercase small fw-bold mb-2">Toplam Hasılat</p>
+                                <h3>@Model.ToplamHasilat.ToString("C0")</h3>
+                                <p class="mb-0 mt-2">
+                                    <span class="text-muted small">
+                                        <i class="fa-solid fa-piggy-bank me-1"></i>TL
+                                    </span>
+                                </p>
                             </div>
-                            <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                            <div class="stat-icon bg-warning text-dark">
                                 <i class="fa-solid fa-money-bill-wave"></i>
                             </div>
-                        </div>
-                        <div class="mt-3">
-                            <small class="text-muted">
-                                <i class="fa-solid fa-piggy-bank me-1"></i>TL
-                            </small>
                         </div>
                     </div>
                 </div>
@@ -129,21 +319,21 @@
         @if (User.IsInRole("Admin"))
         {
             <div class="col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm stat-card" style="border-left-color: #6c757d;">
+                <div class="card stat-card shadow-sm h-100" style="border-left: 5px solid #6c757d;">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <p class="text-muted text-uppercase small fw-bold mb-1">Toplam Salon</p>
-                                <h3 class="fw-bold mb-0">@Model.ToplamSalon</h3>
+                                <p class="text-muted text-uppercase small fw-bold mb-2">Toplam Salon</p>
+                                <h3>@Model.ToplamSalon</h3>
+                                <p class="mb-0 mt-2">
+                                    <span class="text-muted small">
+                                        <i class="fa-solid fa-building me-1"></i>Kayıtlı
+                                    </span>
+                                </p>
                             </div>
-                            <div class="stat-icon bg-secondary bg-opacity-10 text-secondary">
-                                <i class="fa-solid fa-building"></i>
+                            <div class="stat-icon bg-secondary text-white">
+                                <i class="fa-solid fa-couch"></i>
                             </div>
-                        </div>
-                        <div class="mt-3">
-                            <small class="text-muted">
-                                <i class="fa-solid fa-couch me-1"></i>Kayıtlı
-                            </small>
                         </div>
                     </div>
                 </div>
@@ -154,12 +344,12 @@
     <div class="row g-4">
         <!-- YAKLAŞAN ETKİNLİKLER -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <div class="card activity-card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-0">
                     <h5 class="m-0 fw-bold">
                         <i class="fa-solid fa-calendar-days me-2 text-primary"></i>Yaklaşan Etkinlikler
                     </h5>
-                    <a asp-controller="Etkinlikler" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                    <a asp-controller="Etkinlikler" asp-action="Index" class="btn btn-sm btn-outline-primary rounded-pill px-3">
                         Tümünü Gör <i class="fa-solid fa-arrow-right ms-1"></i>
                     </a>
                 </div>
@@ -169,32 +359,34 @@
                         <div class="list-group list-group-flush">
                             @foreach (var etkinlik in Model.YakinEtkinlikler)
                             {
-                                <div class="list-group-item activity-item">
+                                <div class="list-group-item activity-item border-0">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div class="flex-grow-1">
                                             <div class="d-flex align-items-center mb-2">
                                                 <h6 class="mb-0 fw-bold">@etkinlik.EtkinlikAdi</h6>
-                                                <span class="badge bg-primary ms-2">@etkinlik.DolulukOrani%</span>
+                                                <span class="badge bg-primary ms-2 rounded-pill">
+                                                    @etkinlik.DolulukOrani%
+                                                </span>
                                             </div>
                                             <div class="small text-muted mb-2">
                                                 <i class="fa-solid fa-location-dot me-1"></i>@etkinlik.SalonAdi
                                                 <span class="mx-2">•</span>
                                                 <i class="fa-solid fa-calendar me-1"></i>@etkinlik.TarihSaat.ToString("dd MMM yyyy, HH:mm")
                                             </div>
-                                            <div class="progress progress-thin">
+                                            <div class="progress progress-bar-custom bg-light">
                                                 <div class="progress-bar bg-primary" role="progressbar" 
-                                                     style="width: @etkinlik.DolulukOrani%" 
+                                                     style="width: @etkinlik.DolulukOrani%;" 
                                                      aria-valuenow="@etkinlik.DolulukOrani" aria-valuemin="0" aria-valuemax="100">
                                                 </div>
                                             </div>
-                                            <small class="text-muted mt-1 d-block">
-                                                @etkinlik.SatilanBilet / @etkinlik.ToplamKapasite koltuk satıldı
+                                            <small class="text-muted mt-2 d-block">
+                                                <i class="fa-solid fa-chair me-1"></i>@etkinlik.SatilanBilet / @etkinlik.ToplamKapasite koltuk satıldı
                                             </small>
                                         </div>
                                         <div class="ms-3">
                                             <a asp-controller="Satislar" asp-action="SatisYap" asp-route-id="@etkinlik.Id" 
-                                               class="btn btn-sm btn-outline-success">
-                                                <i class="fa-solid fa-cash-register"></i>
+                                               class="btn btn-success btn-sm rounded-pill px-3">
+                                                <i class="fa-solid fa-cash-register me-1"></i>Sat
                                             </a>
                                         </div>
                                     </div>
@@ -213,68 +405,93 @@
             </div>
         </div>
 
-        <!-- SON SATIŞLAR & HIZLI İŞLEMLER -->
+        <!-- SAĞDAKI BÖLÜM -->
         <div class="col-lg-4">
-            <!-- HIZLI İŞLEMLER -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-primary text-white py-3">
+            <!-- HIZLI ERİŞİM MENÜSÜ -->
+            <div class="card quick-menu border-0 shadow-sm mb-4">
+                <div class="card-header text-white py-3 border-0 bg-dark">
                     <h6 class="m-0 fw-bold">
-                        <i class="fa-solid fa-bolt me-2"></i>Hızlı İşlemler
+                        <i class="fa-solid fa-bolt me-2"></i>Hızlı Erişim
                     </h6>
                 </div>
-                <div class="card-body p-2">
-                    <div class="d-grid gap-2">
-                        <a asp-area="Admin" asp-controller="Etkinlikler" asp-action="Index" class="btn btn-outline-primary btn-sm text-start">
-                            <i class="fa-solid fa-plus me-2"></i>Yeni Etkinlik Ekle
+                <div class="card-body p-0">
+                    <a asp-area="Admin" asp-controller="Etkinlikler" asp-action="Index" class="quick-menu-item">
+                        <div class="menu-icon bg-primary text-white">
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <div>
+                            <div class="menu-text">Yeni Etkinlik</div>
+                            <div class="menu-desc">Etkinlik ekleyin</div>
+                        </div>
+                    </a>
+                    <a asp-area="Admin" asp-controller="Satislar" asp-action="Index" class="quick-menu-item">
+                        <div class="menu-icon bg-success text-white">
+                            <i class="fa-solid fa-ticket"></i>
+                        </div>
+                        <div>
+                            <div class="menu-text">Bilet Sat</div>
+                            <div class="menu-desc">Satış yapın</div>
+                        </div>
+                    </a>
+                    @if (User.IsInRole("Admin") || User.IsInRole("Okan"))
+                    {
+                        <a asp-area="Admin" asp-controller="Rapor" asp-action="Index" class="quick-menu-item">
+                            <div class="menu-icon bg-info text-white">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <div class="menu-text">Raporlar</div>
+                                <div class="menu-desc">Satış raporları</div>
+                            </div>
                         </a>
-                        <a asp-area="Admin" asp-controller="Satislar" asp-action="Index" class="btn btn-outline-success btn-sm text-start">
-                            <i class="fa-solid fa-ticket me-2"></i>Bilet Sat
-                        </a>
-                        @if (User.IsInRole("Admin") || User.IsInRole("Okan"))
-                        {
-                            <a asp-area="Admin" asp-controller="Rapor" asp-action="Index" class="btn btn-outline-info btn-sm text-start">
-                                <i class="fa-solid fa-chart-line me-2"></i>Raporları Görüntüle
-                            </a>
-                        }
-                    </div>
+                    }
+                    <a asp-area="Admin" asp-controller="BiletKontrol" asp-action="Index" class="quick-menu-item">
+                        <div class="menu-icon bg-danger text-white">
+                            <i class="fa-solid fa-qrcode"></i>
+                        </div>
+                        <div>
+                            <div class="menu-text">Bilet Kontrol</div>
+                            <div class="menu-desc">QR ile kontrol</div>
+                        </div>
+                    </a>
                 </div>
             </div>
 
             <!-- SON SATIŞLAR -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
+                <div class="card-header bg-white py-3 border-0">
                     <h6 class="m-0 fw-bold">
                         <i class="fa-solid fa-clock-rotate-left me-2 text-success"></i>Son Satışlar
                     </h6>
                 </div>
-                <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+                <div class="card-body p-0" style="max-height: 350px; overflow-y: auto;">
                     @if (Model.SonSatislar.Any())
                     {
-                        <div class="list-group list-group-flush">
-                            @foreach (var satis in Model.SonSatislar)
-                            {
-                                <div class="list-group-item px-3 py-2">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div class="small flex-grow-1">
-                                            <div class="fw-bold text-truncate">@satis.EtkinlikAdi</div>
-                                            <div class="text-muted" style="font-size: 0.75rem;">
-                                                @satis.KoltukNo • @satis.MusteriAdi
-                                            </div>
-                                            <div class="text-muted" style="font-size: 0.7rem;">
-                                                @satis.SatisTarihi.ToString("dd/MM HH:mm")
-                                                @if (!string.IsNullOrEmpty(satis.SatisPlatformu))
-                                                {
-                                                    <span class="badge badge-sm @(satis.SatisPlatformu == "Bubilet" ? "bg-success" : satis.SatisPlatformu == "Biletinial" ? "bg-warning" : "bg-secondary")">
-                                                        @satis.SatisPlatformu
-                                                    </span>
-                                                }
-                                            </div>
+                        @foreach (var satis in Model.SonSatislar)
+                        {
+                            <div class="sale-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="small flex-grow-1">
+                                        <div class="fw-bold text-truncate">@satis.EtkinlikAdi</div>
+                                        <div class="text-muted" style="font-size: 0.8rem;">
+                                            <i class="fa-solid fa-chair me-1"></i>@satis.KoltukNo 
+                                            <span class="mx-1">•</span>
+                                            @satis.MusteriAdi
                                         </div>
-                                        <span class="badge bg-success ms-2">@satis.Fiyat.ToString("C0")</span>
+                                        <div class="text-muted" style="font-size: 0.75rem;">
+                                            <i class="fa-regular fa-clock me-1"></i>@satis.SatisTarihi.ToString("dd/MM HH:mm")
+                                            @if (!string.IsNullOrEmpty(satis.SatisPlatformu))
+                                            {
+                                                <span class="badge ms-1 @(satis.SatisPlatformu == "Bubilet" ? "bg-success" : satis.SatisPlatformu == "Biletinial" ? "bg-warning" : "bg-secondary")" style="font-size: 0.65rem;">
+                                                    @satis.SatisPlatformu
+                                                </span>
+                                            }
+                                        </div>
                                     </div>
+                                    <span class="sale-badge bg-success text-white">@satis.Fiyat.ToString("C0")</span>
                                 </div>
-                            }
-                        </div>
+                            </div>
+                        }
                     }
                     else
                     {

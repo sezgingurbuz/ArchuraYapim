@@ -8,37 +8,118 @@
 }
 
 <div class="container-fluid py-4">
-    <!-- GİŞE HEADER -->
-    <div class="card border-0 shadow-sm mb-4 bg-white">
-        <div class="card-body p-3">
-            <div class="d-flex align-items-center justify-content-between">
-                <!-- Sol: Sidebar Toggle -->
-                <button class="btn btn-outline-dark border-0 p-2" onclick="toggleSidebar()" title="Menüyü Gizle/Göster">
-                    <i class="fa-solid fa-bars fa-2x"></i>
-                </button>
-                
-                <!-- Orta: Logo -->
-                <div class="text-center flex-grow-1">
-                    <div class="text-uppercase fw-bold text-primary ls-1" style="font-size: 1.2rem; letter-spacing: 2px;">Gişe Satış Ekranı</div>
-                </div>
-                
-                <!-- Sağ: Etkinlik Bilgisi ve Geri Dön -->
-                <div class="text-end">
-                    <h5 class="mb-0 text-dark fw-bold">@Model.EtkinlikAdi</h5>
-                    <div class="text-muted small">
-                        <i class="fa-solid fa-location-dot me-1"></i>@Model.Salon?.SalonAdi
-                    </div>
-                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm mt-2 rounded-pill px-3">
-                        <i class="fa-solid fa-arrow-left me-1"></i>Listeye Dön
-                    </a>
+    <!-- GİŞE HEADER - Modern Tasarım -->
+    <div class="gise-header mb-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <!-- Sol: Sidebar Toggle -->
+            <button class="btn btn-light btn-lg rounded-circle shadow-sm" onclick="toggleSidebar()" title="Menüyü Gizle/Göster" style="width: 50px; height: 50px;">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            
+            <!-- Orta: Etkinlik Bilgisi -->
+            <div class="text-center flex-grow-1">
+                <div class="text-uppercase small text-muted mb-1" style="letter-spacing: 2px; font-weight: 600;">Gişe Satış Ekranı</div>
+                <h4 class="mb-0 fw-bold" style="color: #1a1f2e;">@Model.EtkinlikAdi</h4>
+                <div class="text-muted small mt-1">
+                    <i class="fa-solid fa-location-dot me-1"></i>@Model.Salon?.SalonAdi
+                    <span class="mx-2">•</span>
+                    <i class="fa-solid fa-calendar me-1"></i>@Model.TarihSaat.ToString("dd MMM yyyy, HH:mm")
                 </div>
             </div>
+            
+            <!-- Sağ: Geri Dön -->
+            <a asp-action="Index" class="btn btn-dark rounded-pill px-4 py-2">
+                <i class="fa-solid fa-arrow-left me-2"></i>Listeye Dön
+            </a>
         </div>
     </div>
 
+    <style>
+        .gise-header {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .platform-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: none;
+            overflow: hidden;
+        }
+        .platform-card .card-header {
+            background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%);
+            color: white;
+            padding: 1.25rem 1.5rem;
+            border: none;
+        }
+        .platform-btn {
+            padding: 0.875rem 1rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border-width: 2px;
+        }
+        .platform-btn:hover {
+            transform: translateY(-2px);
+        }
+        .form-control, .form-select {
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: all 0.2s;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+        }
+        .btn-sale-complete {
+            background: linear-gradient(135deg, #198754 0%, #157347 100%);
+            border: none;
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(25, 135, 84, 0.35);
+            transition: all 0.3s;
+        }
+        .btn-sale-complete:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(25, 135, 84, 0.45);
+        }
+        .seating-card {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: none;
+        }
+        .seating-card .card-header {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 1rem 1.5rem;
+        }
+        .rezervasyon-card {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+            border: none;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .rezervasyon-card .card-header {
+            background: #ffc107;
+            color: #1a1f2e;
+            border: none;
+            font-weight: 700;
+        }
+        .alert-modern {
+            border-radius: 12px;
+            border: none;
+        }
+    </style>
+
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show">
+        <div class="alert alert-success alert-modern alert-dismissible fade show">
             <i class="fa-solid fa-check-circle me-2"></i>@TempData["SuccessMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
@@ -46,7 +127,7 @@
 
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show">
+        <div class="alert alert-danger alert-modern alert-dismissible fade show">
             <i class="fa-solid fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
@@ -55,8 +136,8 @@
     @* KATEGORİ BİLET BİLGİ KARTI *@
     @if (Model.SatisTipi == "Kategori" && toplamKategoriBilet > 0)
     {
-        <div class="alert @(atanmamisKategoriBilet > 0 ? "alert-warning" : "alert-success") mb-4">
-            <div class="d-flex align-items-center justify-content-between">
+        <div class="alert alert-modern @(atanmamisKategoriBilet > 0 ? "alert-warning" : "alert-success") mb-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
                 <div>
                     <h5 class="mb-1"><i class="fa-solid fa-tags me-2"></i>Kategori Bilet Durumu</h5>
                     <p class="mb-0">
@@ -66,13 +147,13 @@
                 </div>
                 @if (atanmamisKategoriBilet > 0)
                 {
-                    <span class="badge bg-warning text-dark fs-5 px-3 py-2">
+                    <span class="badge bg-warning text-dark fs-5 px-3 py-2 rounded-pill">
                         <i class="fa-solid fa-clock me-1"></i>@atanmamisKategoriBilet Bekliyor
                     </span>
                 }
                 else
                 {
-                    <span class="badge bg-success fs-5 px-3 py-2">
+                    <span class="badge bg-success fs-5 px-3 py-2 rounded-pill">
                         <i class="fa-solid fa-check me-1"></i>Tümü Atandı
                     </span>
                 }
@@ -81,32 +162,29 @@
     }
 
     <!-- REZERVASYON KODU ARAMA -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-warning text-dark py-3">
+    <div class="card rezervasyon-card mb-4">
+        <div class="card-header py-3">
             <h5 class="m-0"><i class="fa-solid fa-search me-2"></i>Rezervasyon Kodu ile Koltuk Atama</h5>
         </div>
-        <div class="card-body">
-            <div class="row align-items-end">
+        <div class="card-body" style="background: white;">
+            <div class="row align-items-end g-3">
                 <div class="col-md-5">
-                    <label class="form-label fw-bold">Rezervasyon Kodu</label>
+                    <label class="form-label fw-bold text-dark">Rezervasyon Kodu</label>
                     <input type="text" id="rezervasyonKoduInput" class="form-control form-control-lg" 
                            placeholder="Örn: RZV-ABC12345" style="text-transform: uppercase;" />
                 </div>
                 <div class="col-md-3">
-                    <button type="button" id="rezervasyonAraBtn" class="btn btn-warning btn-lg w-100">
+                    <button type="button" id="rezervasyonAraBtn" class="btn btn-warning btn-lg w-100 fw-bold" style="border-radius: 12px;">
                         <i class="fa-solid fa-search me-2"></i>Ara
                     </button>
                 </div>
                 <div class="col-md-4">
-                    <div id="rezervasyonSonuc" style="display: none;">
-                        <!-- AJAX sonucu buraya gelecek -->
-                    </div>
+                    <div id="rezervasyonSonuc" style="display: none;"></div>
                 </div>
             </div>
             
-            <!-- Bulunan bilet bilgileri -->
             <div id="biletBilgileri" class="mt-4" style="display: none;">
-                <div class="alert alert-success">
+                <div class="alert alert-success alert-modern">
                     <div class="row">
                         <div class="col-md-8">
                             <h6><i class="fa-solid fa-user me-2"></i>Müşteri Bilgileri</h6>
@@ -116,7 +194,7 @@
                             <p class="mb-0"><strong>Fiyat:</strong> <span id="biletFiyati"></span> ₺</p>
                         </div>
                         <div class="col-md-4 text-end d-flex align-items-center justify-content-end">
-                            <a id="koltukAtamaLink" href="#" class="btn btn-success btn-lg">
+                            <a id="koltukAtamaLink" href="#" class="btn btn-success btn-lg rounded-pill px-4">
                                 <i class="fa-solid fa-chair me-2"></i>Koltuk Ata
                             </a>
                         </div>
@@ -126,15 +204,13 @@
         </div>
     </div>
 
-    <hr class="my-4" />
-
-    <div class="row">
+    <div class="row g-4">
         <!-- KOLTUK DÜZENİ (SOL) -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm" id="seating-card">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="m-0"><i class="fa-solid fa-couch me-2"></i>Koltuk Seçimi</h5>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="fullscreenBtn" onclick="toggleFullscreen()">
+            <div class="card seating-card" id="seating-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="m-0 fw-bold"><i class="fa-solid fa-couch me-2 text-primary"></i>Koltuk Seçimi</h5>
+                    <button type="button" class="btn btn-outline-dark btn-sm rounded-pill px-3" id="fullscreenBtn" onclick="toggleFullscreen()">
                         <i class="fa-solid fa-expand me-1"></i> <span>Tam Ekran</span>
                     </button>
                 </div>
@@ -145,25 +221,25 @@
                         </div>
                     </div>
 
-                    <div class="stage-mb-4 mx-auto bg-dark text-white rounded py-2 mb-4" style="max-width: 600px;">
+                    <div class="stage-mb-4 mx-auto bg-dark text-white rounded-pill py-2 px-5 mb-4" style="max-width: 500px; font-weight: 600; letter-spacing: 2px;">
                         SAHNE
                     </div>
 
-                    <div class="d-flex justify-content-center gap-4 mt-4 flex-wrap" id="legend-area">
+                    <div class="d-flex justify-content-center gap-4 mt-4 flex-wrap p-3 bg-white rounded-3" id="legend-area">
                         <div class="d-flex align-items-center">
-                            <div class="seat-legend bg-secondary me-2"></div> Boş
+                            <div class="seat-legend bg-secondary me-2"></div> <span class="small fw-medium">Boş</span>
                         </div>
                         <div class="d-flex align-items-center">
-                            <div class="seat-legend bg-primary me-2"></div> Seçili
+                            <div class="seat-legend bg-primary me-2"></div> <span class="small fw-medium">Seçili</span>
                         </div>
                         <div class="d-flex align-items-center">
-                            <div class="seat-legend bg-success me-2"></div> Bubilet
+                            <div class="seat-legend bg-success me-2"></div> <span class="small fw-medium">Bubilet</span>
                         </div>
                         <div class="d-flex align-items-center">
-                            <div class="seat-legend bg-warning me-2"></div> Biletinial
+                            <div class="seat-legend bg-warning me-2"></div> <span class="small fw-medium">Biletinial</span>
                         </div>
                         <div class="d-flex align-items-center">
-                            <div class="seat-legend bg-danger me-2"></div> Satılmış
+                            <div class="seat-legend bg-danger me-2"></div> <span class="small fw-medium">Satılmış</span>
                         </div>
                     </div>
                 </div>
@@ -172,16 +248,16 @@
 
         <!-- SATIŞ FORMU (SAĞ) -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
-                <div class="card-header bg-primary text-white py-3">
-                    <h5 class="m-0"><i class="fa-solid fa-cash-register me-2"></i>Satış Bilgileri</h5>
+            <div class="card platform-card sticky-top" style="top: 20px;">
+                <div class="card-header">
+                    <h5 class="m-0 fw-bold"><i class="fa-solid fa-cash-register me-2"></i>Satış Bilgileri</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <!-- PLATFORM SEÇİMİ -->
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Satış Platformu</label>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted small text-uppercase" style="letter-spacing: 0.5px;">Satış Platformu</label>
                         <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-outline-secondary platform-btn" data-platform="Archura">
+                            <button type="button" class="btn btn-outline-dark platform-btn" data-platform="Archura">
                                 <i class="fa-solid fa-globe me-2"></i>Archura (Direkt Satış)
                             </button>
                             <button type="button" class="btn btn-outline-success platform-btn" data-platform="Bubilet">
@@ -193,7 +269,7 @@
                         </div>
                     </div>
 
-                    <hr class="my-3" />
+                    <hr class="my-4" />
 
                     <form asp-action="SatisYap" method="post" id="salesForm">
                         <input type="hidden" name="etkinlikId" value="@Model.Id" />
@@ -202,8 +278,8 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">Seçilen Koltuklar</label>
                             <input type="text" name="koltuklar" id="selectedSeats" class="form-control" 
-                                   placeholder="Koltuk seçiniz..." readonly required />
-                            <small class="text-muted">Koltukları seçmek için tıklayın</small>
+                                   placeholder="Koltuk seçiniz..." readonly required style="background: #f8f9fa;" />
+                            <small class="text-muted">Soldaki plan üzerinden koltuk seçin</small>
                         </div>
 
                         <div class="mb-3">
@@ -212,21 +288,22 @@
                                    placeholder="100" step="0.01" min="0" required />
                         </div>
 
-                        <hr class="my-3" />
+                        <hr class="my-4" />
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Ad <span class="text-danger">*</span></label>
-                            <input type="text" name="musteriAdi" class="form-control" 
-                                   placeholder="Müşteri adı" required />
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Ad <span class="text-danger">*</span></label>
+                                <input type="text" name="musteriAdi" class="form-control" 
+                                       placeholder="Ad" required />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Soyad <span class="text-danger">*</span></label>
+                                <input type="text" name="musteriSoyadi" class="form-control" 
+                                       placeholder="Soyad" required />
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Soyad <span class="text-danger">*</span></label>
-                            <input type="text" name="musteriSoyadi" class="form-control" 
-                                   placeholder="Müşteri soyadı" required />
-                        </div>
-
-                        <div class="mb-3">
+                        <div class="mb-3 mt-3">
                             <label class="form-label fw-bold">Telefon <span class="text-danger">*</span></label>
                             <input type="tel" name="musteriTelefon" class="form-control" 
                                    placeholder="05xx xxx xx xx" required />
@@ -238,17 +315,17 @@
                                    placeholder="musteri@example.com" />
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <label class="form-label fw-bold">Ödeme Yöntemi</label>
                             <select name="odemeYontemi" class="form-select" required>
                                 <option value="">Seçiniz...</option>
-                                <option value="Nakit">Nakit</option>
-                                <option value="Kart">Kart</option>
-                                <option value="EFT">EFT</option>
+                                <option value="Nakit">💵 Nakit</option>
+                                <option value="Kart">💳 Kart</option>
+                                <option value="EFT">🏦 EFT</option>
                             </select>
                         </div>
 
-                        <button type="submit" class="btn btn-success btn-lg w-100">
+                        <button type="submit" class="btn btn-success btn-sale-complete w-100">
                             <i class="fa-solid fa-check me-2"></i>Satışı Tamamla
                         </button>
                     </form>
@@ -257,6 +334,7 @@
         </div>
     </div>
 </div>
+
 
 <style>
     .seat-row {

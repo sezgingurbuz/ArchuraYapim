@@ -35,6 +35,14 @@ namespace basics.Areas.Admin.Controllers
             viewModel.ToplamSatilanBilet = _context.EtkinlikKoltuklari.Count(k => k.DoluMu);
             viewModel.ToplamHasilat = _context.EtkinlikKoltuklari.Where(k => k.DoluMu).Sum(k => k.Fiyat);
             
+            // Bugünkü satışlar
+            var bugun = DateTime.Today;
+            viewModel.BugunSatilanBilet = _context.EtkinlikKoltuklari
+                .Count(k => k.DoluMu && k.SatisTarihi.HasValue && k.SatisTarihi.Value.Date == bugun);
+            viewModel.BugunHasilat = _context.EtkinlikKoltuklari
+                .Where(k => k.DoluMu && k.SatisTarihi.HasValue && k.SatisTarihi.Value.Date == bugun)
+                .Sum(k => k.Fiyat);
+            
             // Yaklaşan 5 etkinlik
             var yakinEtkinlikler = _context.Etkinlikler
                 .Where(e => e.TarihSaat >= DateTime.Now)

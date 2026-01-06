@@ -1,0 +1,14 @@
+665588669402-0qa05f2ikgs2m5pmtjhq771m5hrcmhqu.apps.googleusercontent.com
+
+bilet satış ekranına ve etkinlik inceleme ekranına kaç adet kategori bilet satışı yapıldığını göster. 
+
+Koltuk atama işleminde bir koltuğu seçtikten sonra tekrar tıklayınca bırakma işlemi yapmıyor
+
+Tickets/KategoriOdeme sayfasındaki Karanlık modu düzelt
+
+SatisYap ve Detay sayfasındaki koltuk düzenine bir büyültme butonu eklenecek. Bu butona basınca kullanıcı panelindeki gibi salon tam ekran olacak. Tekrar basınca küçültme işlemi yapılacak
+
+Kullanıcı doğrulama sistemi kurulacak. Numarası doğrulanmayan kullanıcının bilet satın alma işlemi gerçekleşmeyecek. 
+Mail bilgilendirme sistemi kurulacak. 
+
+İptal etme sistemi güncellenecek. Bilet satılan etkinliklerin iade işlemi Gemini'ın önerdiği gibi yapılacak.
